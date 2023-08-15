@@ -186,6 +186,8 @@ Copyright (c) 2015 Daniel Eden
   background-color: #999;
   width: 11px; }
 
+
+
 .ps-container > .ps-scrollbar-x-rail {
   display: none;
   position: absolute;
@@ -4805,5 +4807,14 @@ License - nucleoapp.com/license/
 
 *, *:focus, a, a:focus {
   outline: none; }
+
+.icon-large {
+  font-size: 15px; /* Adjust the size as needed */
+}
+
+.image-fit {
+  width: 100%;
+  height: auto; /* Maintain aspect ratio */
+}
 
 /*# sourceMappingURL=paper-dashboard.css.map */

@@ -10,6 +10,8 @@ package-lock.json
 # production
 /build
 
+/paper-dashboard-react-main
+
 # misc
 .DS_Store
 .env.local

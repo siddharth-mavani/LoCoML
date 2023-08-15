@@ -24,6 +24,7 @@ import TableList from "views/Tables.js";
 import Maps from "views/Map.js";
 import UserPage from "views/User.js";
 import UpgradeToPro from "views/Upgrade.js";
+import UploadData from "views/UploadData";
 
 var routes = [
   {
@@ -31,6 +32,13 @@ var routes = [
     name: "Dashboard",
     icon: "nc-icon nc-bank",
     component: <Dashboard />,
+    layout: "/admin",
+  },
+  {
+    path: "/upload-data",
+    name: "Upload Data",
+    icon: "nc-icon nc-cloud-upload-94",
+    component: <UploadData />,
     layout: "/admin",
   },
   {
