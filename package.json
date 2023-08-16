@@ -13,6 +13,7 @@
     "react-router-dom": "6.11.1",
     "react-scripts": "5.0.1",
     "reactstrap": "8.10.0",
+    "rsuite": "^5.37.4",
     "sass": "1.62.1"
   },
   "scripts": {
