@@ -4813,8 +4813,24 @@ License - nucleoapp.com/license/
 }
 
 .image-fit {
-  width: 100%;
+  width: 50%;
   height: auto; /* Maintain aspect ratio */
+  /*center align */
+  margin-left: auto;
+  margin-right: auto;
+  display: block; 
+  margin-bottom: 10px;
 }
+
+.half-height-card {
+  display: flex;
+  flex-direction: column;
+  height: 40vh; /* Set the height to 50% of the viewport height */
+}
+
+.notif-button {
+  background-color: white;
+}
+
 
 /*# sourceMappingURL=paper-dashboard.css.map */
