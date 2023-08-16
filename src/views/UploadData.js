@@ -1,9 +1,21 @@
-import React, { useState, useRef } from 'react';
-import { Row, Col, Card, CardBody, Button, Alert } from "reactstrap";
-// import { Notification, Placeholder } from 'rsuite';
+import { Row, Col, Card, CardBody, Button } from "reactstrap";
 import "../assets/css/paper-dashboard.css"
 
 function UploadData() {
+    const fileInput = useRef(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        console.log(file);
+        setSelectedFile(file);
+    };
+
+    const formatFileSize = (sizeInBytes) => {
+        const megabytes = sizeInBytes / (1024 * 1024);
+        return String(megabytes.toFixed(2) + ' MB');
+    };
+
     const fileInput = useRef(null);
     const [selectedFile, setSelectedFile] = useState(null);
 
