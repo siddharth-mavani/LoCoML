@@ -25,6 +25,7 @@ import Maps from "views/Map.js";
 import UserPage from "views/User.js";
 import UpgradeToPro from "views/Upgrade.js";
 import UploadData from "views/UploadData";
+import Preview from "views/Preview";
 
 var routes = [
   {
@@ -41,6 +42,13 @@ var routes = [
     component: <UploadData />,
     layout: "/admin",
   },
+  {
+    path: "/preview",
+    name: "Preview",
+    icon: "nc-icon nc-cloud-upload-94",
+    component: <Preview />,
+    layout: "/admin",
+  },  
   {
     path: "/icons",
     name: "Icons",
