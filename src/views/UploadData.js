@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Row, Col, Card, CardBody, Button, Alert } from "reactstrap";
-import { Notification, Placeholder } from 'rsuite';
+// import { Notification, Placeholder } from 'rsuite';
 import "../assets/css/paper-dashboard.css"
 
 function UploadData() {
