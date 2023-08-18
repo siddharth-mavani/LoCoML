@@ -64,7 +64,7 @@ function Dashboard(props) {
         bgColor={backgroundColor}
         activeColor={activeColor}
       />
-      <div className="main-panel" ref={mainPanel}>
+      <div className="main-panel" style={{ fontFamily: 'FontName, Roboto', fontSize: '16px' }} ref={mainPanel}>
         <DemoNavbar {...props} />
         <Routes>
           {routes.map((prop, key) => {

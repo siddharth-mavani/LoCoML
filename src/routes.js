@@ -19,6 +19,7 @@
 import Dashboard from "views/Dashboard.js";
 import UploadData from "views/UploadData";
 import DataPreprocessing from "views/DataPreprocessing";
+import Train from "views/train";
 
 var routes = [
   {
@@ -34,12 +35,18 @@ var routes = [
     component: <UploadData />,
   },
   {
-    path: "/preview",
-    name: "Preview",
+    path: "/train",
+    name: "Train",
     icon: "nc-icon nc-cloud-upload-94",
-    component: <Preview />,
-    layout: "/admin",
-  },  
+    component: <Train />,
+  },
+  // {
+  //   path: "/preview",
+  //   name: "Preview",
+  //   icon: "nc-icon nc-cloud-upload-94",
+  //   component: <Preview />,
+  //   layout: "/admin",
+  // },  
   {
     path: "/data-preprocessing",
     name: "Data Preprocessing",
