@@ -19,6 +19,7 @@
 import Dashboard from "views/Dashboard.js";
 import UploadData from "views/UploadData";
 import DataPreprocessing from "views/DataPreprocessing";
+import Preview from "views/Preview";
 import Train from "views/train";
 
 var routes = [
