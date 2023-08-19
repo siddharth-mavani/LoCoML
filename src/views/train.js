@@ -71,7 +71,8 @@ function Train() {
         <div className="content">
             <Row>
                 <Col>
-                    <Stepper activeStep={activeStep}>
+                    <Box style={{justifyContent: "center", display: "flex", marginBottom: "1rem"}}>
+                    <Stepper activeStep={activeStep} style={{width: "80%",}}>
                         {steps.map((label, index) => {
                             const stepProps = {};
                             const labelProps = {};
@@ -82,6 +83,7 @@ function Train() {
                             );
                         })}
                     </Stepper>
+                    </Box>
                     {activeStep === steps.length ? (
                         <React.Fragment>
                             <Typography sx={{ mt: 2, mb: 1 }}>
