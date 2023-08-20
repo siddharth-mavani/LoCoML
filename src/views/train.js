@@ -14,7 +14,10 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
-import { LinearProgress } from "@mui/material";
+import { CircularProgress, LinearProgress } from "@mui/material";
+import axios from "axios";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import Papa from "papaparse";
 
 import { Col, Row, Button as ReactStrapButton } from "reactstrap";
 
@@ -23,11 +26,46 @@ function Train() {
     const [modelType, setModelType] = React.useState('');
     const [metricType, setMetricType] = React.useState('');
     const [loading, setLoading] = React.useState(false);
+    const [datasetList, setDatasetList] = React.useState([]);
+    const [selectedDataset, setSelectedDataset] = React.useState('');
+    const [selectedDataContents, setSelectedDataContents] = React.useState(null);
+    const [datasetColumns, setDatasetColumns] = React.useState([]);
 
     const steps = ['Training Options', 'Model Selection', 'Train the model'];
     const democolumns = ['Age', 'Amount', 'Income', 'Fraud Type']
     const classifiers = ['Logistic Regression', 'Decision Tree', 'Random Forest', 'AdaBoost', 'Naive Bayes', 'KNN', 'SVM']
     const metrics = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'AUC']
+
+    React.useEffect(() => {
+        axios.get('http://localhost:5000/getDatasets')
+            .then((response) => {
+                console.log(response.data);
+                setDatasetList(response.data.datasets);
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }, []);
+
+    React.useEffect(() => {
+        // try { await new Promise(resolve => setTimeout(resolve, 2000)) } catch (error) { console.error('API error:', error) }
+        axios.get('http://localhost:5000/getDatasets/' + selectedDataset)
+            .then((response) => {
+                console.log(response.data);
+                setSelectedDataContents(response.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            })
+    }, [selectedDataset]);
+
+    React.useEffect(() => {
+        if (selectedDataContents != null) {
+            const parsedData = Papa.parse(selectedDataContents, { header: true });
+            console.log(parsedData.data);
+            setDatasetColumns(Object.keys(parsedData.data[0]));
+        }
+    }, [selectedDataContents]);
 
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -71,18 +109,18 @@ function Train() {
         <div className="content">
             <Row>
                 <Col>
-                    <Box style={{justifyContent: "center", display: "flex", marginBottom: "1rem"}}>
-                    <Stepper activeStep={activeStep} style={{width: "80%",}}>
-                        {steps.map((label, index) => {
-                            const stepProps = {};
-                            const labelProps = {};
-                            return (
-                                <Step key={label} {...stepProps}>
-                                    <StepLabel {...labelProps}>{label}</StepLabel>
-                                </Step>
-                            );
-                        })}
-                    </Stepper>
+                    <Box style={{ justifyContent: "center", display: "flex", marginBottom: "1rem" }}>
+                        <Stepper activeStep={activeStep} style={{ width: "80%", }}>
+                            {steps.map((label, index) => {
+                                const stepProps = {};
+                                const labelProps = {};
+                                return (
+                                    <Step key={label} {...stepProps}>
+                                        <StepLabel {...labelProps}>{label}</StepLabel>
+                                    </Step>
+                                );
+                            })}
+                        </Stepper>
                     </Box>
                     {activeStep === steps.length ? (
                         <React.Fragment>
@@ -110,13 +148,24 @@ function Train() {
                                                     labelId="datasetlabel"
                                                     label="Column"
                                                     fullWidth
+                                                    value={selectedDataset}
+                                                    onChange={(e) => setSelectedDataset(e.target.value)}
                                                 // onChange={handleChange}
                                                 >
-                                                    {democolumns.map((column) => (
+                                                    {datasetList.map((column) => (
                                                         <MenuItem value={column}>{column}</MenuItem>
                                                     ))}
                                                 </Select>
                                             </FormControl>
+                                            {selectedDataset != '' && selectedDataContents == null ?
+                                                <div className="mt-3">
+                                                    <CircularProgress /> Fetching the dataset contents...
+                                                </div> : null}
+                                            {selectedDataset != '' && selectedDataContents != null ?
+                                                <div className="mt-3">
+                                                   <CheckCircleIcon color='success' /> Dataset: {selectedDataset} fetched successfully.
+                                                </div> : null
+                                            }
                                         </Col>
                                     </Row>
 
@@ -153,7 +202,7 @@ function Train() {
                                                     fullWidth
                                                 // onChange={handleChange}
                                                 >
-                                                    {democolumns.map((column) => (
+                                                    {datasetColumns.map((column) => (
                                                         <MenuItem value={column}>{column}</MenuItem>
                                                     ))}
                                                 </Select>
@@ -300,10 +349,15 @@ function Train() {
                                     <Col md="2">
                                         Dataset:
                                     </Col>
+                                    <Col md="6">
+                                        {selectedDataset}
+                                    </Col>
                                 </Row>
                                 <Row className="mb-3">
                                     <Col md="2">
                                         Model Name:
+                                    </Col>
+                                    <Col md="6">
                                     </Col>
                                 </Row>
                                 <Row className="mb-3">
@@ -313,7 +367,17 @@ function Train() {
                                 </Row>
                                 <Row className="mb-3">
                                     <Col md="2">
-                                        Optimization Objective:
+                                        Objective:
+                                    </Col>
+                                </Row>
+                                <Row className="mb-3">
+                                    <Col md="2">
+                                        Target Column:
+                                    </Col>
+                                </Row>
+                                <Row className="mb-3">
+                                    <Col md="2">
+                                        Optimization Metric:
                                     </Col>
                                 </Row>
                                 <Row className="mb-3">
