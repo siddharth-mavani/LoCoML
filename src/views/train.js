@@ -37,7 +37,7 @@ function Train() {
     const metrics = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'AUC']
 
     React.useEffect(() => {
-        axios.get('http://localhost:5000/getDatasets')
+        axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
             .then((response) => {
                 console.log(response.data);
                 setDatasetList(response.data.datasets);
@@ -49,7 +49,7 @@ function Train() {
 
     React.useEffect(() => {
         // try { await new Promise(resolve => setTimeout(resolve, 2000)) } catch (error) { console.error('API error:', error) }
-        axios.get('http://localhost:5000/getDatasets/' + selectedDataset)
+        axios.get(process.env.REACT_APP_GET_DATASET_URL + selectedDataset)
             .then((response) => {
                 console.log(response.data);
                 setSelectedDataContents(response.data);
