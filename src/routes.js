@@ -19,7 +19,8 @@
 import Dashboard from "views/Dashboard.js";
 import UploadData from "views/UploadData";
 import DataPreprocessing from "views/DataPreprocessing";
-import Preview from "views/Preview";
+// import Preview from "views/Preview";
+import EDA from "views/EDA";
 import Train from "views/train";
 
 var routes = [
@@ -48,6 +49,13 @@ var routes = [
   //   component: <Preview />,
   //   layout: "/admin",
   // },  
+  {
+    path: "/eda",
+    name: "EDA",
+    icon: "nc-icon nc-cloud-upload-94",
+    component: <EDA />,
+    layout: "/admin",
+  },
   {
     path: "/data-preprocessing",
     name: "Data Preprocessing",
