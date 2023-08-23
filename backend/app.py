@@ -1,9 +1,14 @@
 from flask import Flask, Blueprint
-from getDatasets import getDatasets
 from flask_cors import CORS
+
+from getDatasets import getDatasets
+from preprocess import preprocess
+
 app = Flask(__name__)
-CORS(app, origins="http://localhost:3000/")
+CORS(app)
+
 app.register_blueprint(getDatasets)
+app.register_blueprint(preprocess)
 
 if __name__ == "__main__":
     app.run()

@@ -61,6 +61,25 @@ function DataPreprocessing() {
         }
       };
 
+    const handlePreProcessing = () => {
+        const finalTasks = ["Drop Duplicate Rows", "Interpolate Missing Values", "Normalise Features"];
+        if (preProcessingType === "Manual") {
+            finalTasks = selectedLabels;
+        }
+        // Send request to backend to begin preprocessing
+        axios.post(process.env.REACT_APP_PREPROCESSING_URL, {
+            name: selectedDataset + '.csv',
+            tasks: finalTasks
+        })
+        .then((response) => {
+            console.log(response.data);
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+    }
+
+
     const handleSelect = (dataset) => {
         setSelectedDataset(dataset);
     }
@@ -97,7 +116,7 @@ function DataPreprocessing() {
                         <>
                             <Col md = "12">
                                     <FormGroup className={classes.formGroup} >
-                                    <FormControlLabel control={<Checkbox onChange={handleLabelChange} name="Drop Duplicate Rows" />} label="Drop Duplicate Rows"/>
+                                        <FormControlLabel control={<Checkbox onChange={handleLabelChange} name="Drop Duplicate Rows" />} label="Drop Duplicate Rows"/>
                                         <FormControlLabel control={<Checkbox onChange={handleLabelChange} name="Interpolate Missing Values" />} label="Interpolate Missing Values"/>
                                         <FormControlLabel control={<Checkbox onChange={handleLabelChange} name="Normalise Features" />} label="Normalise Features"/>
                                     </FormGroup>
@@ -129,7 +148,7 @@ function DataPreprocessing() {
                                             {dataset === selectedDataset ? (
                                                 <>
                                                     <Button color="danger" onClick={() => setSelectedDataset("")} style={{ marginRight: "5px" }}>Unselect</Button>
-                                                    <Button color="success">Begin Preprocessing</Button>
+                                                    <Button color="success" onClick={handlePreProcessing}>Begin Preprocessing</Button>
                                                 </>
                                             ) : (
                                                 <Button color="info" onClick={() => handleSelect(dataset)}>Select</Button>
