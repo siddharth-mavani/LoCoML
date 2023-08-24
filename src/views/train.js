@@ -14,7 +14,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
-import { CircularProgress, LinearProgress } from "@mui/material";
+import { Chip, CircularProgress, LinearProgress } from "@mui/material";
 import axios from "axios";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Papa from "papaparse";
@@ -30,6 +30,10 @@ function Train() {
     const [selectedDataset, setSelectedDataset] = React.useState('');
     const [selectedDataContents, setSelectedDataContents] = React.useState(null);
     const [datasetColumns, setDatasetColumns] = React.useState([]);
+    const [objective, setObjective] = React.useState('');
+    const [targetColumn, setTargetColumn] = React.useState('');
+    const [modelName, setModelName] = React.useState('');
+    const [trainingCompleted, setTrainingCompleted] = React.useState(false);
 
     const steps = ['Training Options', 'Model Selection', 'Train the model'];
     const democolumns = ['Age', 'Amount', 'Income', 'Fraud Type']
@@ -102,6 +106,7 @@ function Train() {
             console.error('API error:', error);
         } finally {
             setLoading(false); // Stop loading
+            setTrainingCompleted(true);
         }
     }
 
@@ -163,7 +168,7 @@ function Train() {
                                                 </div> : null}
                                             {selectedDataset != '' && selectedDataContents != null ?
                                                 <div className="mt-3">
-                                                   <CheckCircleIcon color='success' /> Dataset: {selectedDataset} fetched successfully.
+                                                    <CheckCircleIcon color='success' /> Dataset: {selectedDataset} fetched successfully.
                                                 </div> : null
                                             }
                                         </Col>
@@ -180,7 +185,8 @@ function Train() {
                                                     labelId="objectivelabel"
                                                     label="Column"
                                                     fullWidth
-                                                // onChange={handleChange}
+                                                    value={objective}
+                                                    onChange={(e) => setObjective(e.target.value)}
                                                 >
                                                     <MenuItem value="classification">Classification</MenuItem>
                                                     <MenuItem value="regression">Regression</MenuItem>
@@ -200,7 +206,8 @@ function Train() {
                                                     labelId="label"
                                                     label="Column"
                                                     fullWidth
-                                                // onChange={handleChange}
+                                                    value={targetColumn}
+                                                    onChange={(e) => setTargetColumn(e.target.value)}
                                                 >
                                                     {datasetColumns.map((column) => (
                                                         <MenuItem value={column}>{column}</MenuItem>
@@ -215,7 +222,13 @@ function Train() {
                                             Enter Model Name:
                                         </Col>
                                         <Col md="6">
-                                            <TextField label="Model Name" variant="outlined" fullWidth />
+                                            <TextField
+                                                label="Model Name"
+                                                variant="outlined"
+                                                fullWidth
+                                                value={modelName}
+                                                onChange={(e) => setModelName(e.target.value)}
+                                            />
                                         </Col>
                                     </Row>
 
@@ -345,7 +358,7 @@ function Train() {
                                         </Typography>
                                     </Col>
                                 </Row>
-                                <Row className="mb-3">
+                                <Row className="align-items-center mb-3">
                                     <Col md="2">
                                         Dataset:
                                     </Col>
@@ -358,26 +371,39 @@ function Train() {
                                         Model Name:
                                     </Col>
                                     <Col md="6">
+                                        {modelName}
                                     </Col>
                                 </Row>
                                 <Row className="mb-3">
                                     <Col md="2">
                                         Model Type:
                                     </Col>
+                                    <Col md="6">
+                                        {modelType}
+                                    </Col>
                                 </Row>
                                 <Row className="mb-3">
                                     <Col md="2">
                                         Objective:
+                                    </Col>
+                                    <Col md="6">
+                                        {objective}
                                     </Col>
                                 </Row>
                                 <Row className="mb-3">
                                     <Col md="2">
                                         Target Column:
                                     </Col>
+                                    <Col md="6">
+                                        {targetColumn}
+                                    </Col>
                                 </Row>
                                 <Row className="mb-3">
                                     <Col md="2">
                                         Optimization Metric:
+                                    </Col>
+                                    <Col md="6">
+                                        {metricType}
                                     </Col>
                                 </Row>
                                 <Row className="mb-3">
@@ -402,9 +428,23 @@ function Train() {
                                 </Button>
                                 <Box sx={{ flex: '1 1 auto' }} />
 
-                                <Button onClick={handleNext}>
+                                {/* <Button onClick={handleNext}>
                                     {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                                </Button>
+                                </Button> */}
+                                {activeStep === steps.length - 1 ? 
+                                    <Button 
+                                        onClick={handleNext}
+                                        disabled={!trainingCompleted}
+                                    >
+                                        Finish
+                                    </Button>
+                                : 
+                                    <Button
+                                        onClick={handleNext}
+                                    >
+                                        Next
+                                    </Button>
+                                }
                             </Box>
                         </React.Fragment>
                     )}
