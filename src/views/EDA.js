@@ -28,7 +28,7 @@ function EDA() {
             min: variableType === "Integer" ? calculateMin(columnValues) : "-",
             max: variableType === "Integer" ? calculateMax(columnValues) : "-",
             missingValues: calculateMissingValues(columnValues),
-            range: calculateRange(columnValues),
+            range: variableType === "Integer" ? calculateRange(columnValues) : "-",
           };
         });
         setColumnInfo(info);
