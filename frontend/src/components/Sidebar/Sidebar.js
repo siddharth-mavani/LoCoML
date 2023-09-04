@@ -23,6 +23,7 @@ import { Nav } from "reactstrap";
 import PerfectScrollbar from "perfect-scrollbar";
 import Icons from "views/Icons.js";
 
+
 var ps;
 
 function Sidebar(props) {

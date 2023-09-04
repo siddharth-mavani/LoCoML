@@ -22,25 +22,45 @@ import DataPreprocessing from "views/DataPreprocessing";
 // import Preview from "views/Preview";
 import EDA from "views/EDA";
 import Train from "views/train";
+import TrainedModels from "views/TrainedModels";
 
 var routes = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    icon: "nc-icon nc-bank",
+    // icon: "nc-icon nc-bank",
     component: <Dashboard />,
   },
   {
     path: "/upload-data",
     name: "Upload Data",
-    icon: "nc-icon nc-cloud-upload-94",
+    // icon: "nc-icon nc-cloud-upload-94",
     component: <UploadData />,
+  },
+  {
+    path: "/eda",
+    name: "Exploratory Data Analysis",
+    // icon: "nc-icon nc-cloud-upload-94",
+    component: <EDA />,
+    layout: "/admin",
+  },
+  {
+    path: "/data-preprocessing",
+    name: "Data Preprocessing",
+    // icon: "nc-icon nc-tile-56",
+    component: <DataPreprocessing />,
   },
   {
     path: "/train",
     name: "Train",
-    icon: "nc-icon nc-cloud-upload-94",
+    // icon: "nc-icon nc-cloud-upload-94",
     component: <Train />,
+  },
+  {
+    path: "/models",
+    name: "Trained Models",
+    // icon: "nc-icon nc-cloud-upload-94",
+    component: <TrainedModels />,
   },
   // {
   //   path: "/preview",
@@ -49,18 +69,5 @@ var routes = [
   //   component: <Preview />,
   //   layout: "/admin",
   // },  
-  {
-    path: "/eda",
-    name: "EDA",
-    icon: "nc-icon nc-cloud-upload-94",
-    component: <EDA />,
-    layout: "/admin",
-  },
-  {
-    path: "/data-preprocessing",
-    name: "Data Preprocessing",
-    icon: "nc-icon nc-tile-56",
-    component: <DataPreprocessing />,
-  },
 ];
 export default routes;

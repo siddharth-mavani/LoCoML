@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -18,13 +18,31 @@ import { Chip, CircularProgress, LinearProgress } from "@mui/material";
 import axios from "axios";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Papa from "papaparse";
+import { Table } from "reactstrap";
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { makeStyles } from "@mui/styles";
 
 import { Col, Row, Button as ReactStrapButton } from "reactstrap";
 
+const useStyles = makeStyles((theme) => ({
+    accordionTitle: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    accordionSummary: {
+        justifyContent: 'space-between',
+    },
+}));
+
 function Train() {
     const [activeStep, setActiveStep] = React.useState(0);
-    const [modelType, setModelType] = React.useState('');
-    const [metricType, setMetricType] = React.useState('');
+    const [modelType, setModelType] = React.useState('AutoML');
+    const [customModelType, setCustomModelType] = React.useState('');
+    const [metricType, setMetricType] = React.useState('AutoSelect');
+    const [customMetricType, setCustomMetricType] = React.useState('');
     const [loading, setLoading] = React.useState(false);
     const [datasetList, setDatasetList] = React.useState([]);
     const [selectedDataset, setSelectedDataset] = React.useState('');
@@ -34,11 +52,14 @@ function Train() {
     const [targetColumn, setTargetColumn] = React.useState('');
     const [modelName, setModelName] = React.useState('');
     const [trainingCompleted, setTrainingCompleted] = React.useState(false);
+    const [trainingResponse, setTrainingResponse] = React.useState();
+    const classes = useStyles();
 
     const steps = ['Training Options', 'Model Selection', 'Train the model'];
-    const democolumns = ['Age', 'Amount', 'Income', 'Fraud Type']
     const classifiers = ['Logistic Regression', 'Decision Tree', 'Random Forest', 'AdaBoost', 'Naive Bayes', 'KNN', 'SVM']
-    const metrics = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'AUC']
+    const regressors = ['Random Forest Regressor', 'AdaBoost Regressor', 'Ridge Regression', 'Bayesian Ridge']
+    const classificationMetrics = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'AUC']
+    const regressionMetrics = ['R2 Score', 'Mean Absolute Error', 'Mean Squared Error', 'Root Mean Squared Error']
 
     React.useEffect(() => {
         axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
@@ -79,10 +100,6 @@ function Train() {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
-    const handleReset = () => {
-        setActiveStep(0);
-    };
-
     const handleModelTypeChange = (event) => {
         console.log(event.target.value);
         setModelType(event.target.value);
@@ -93,21 +110,36 @@ function Train() {
         setMetricType(event.target.value);
     }
 
+    // useEffect(() => {
+    //     if (localStorage.getItem('trainingResponse')) {
+    //         setTrainingResponse(JSON.parse(localStorage.getItem('trainingResponse')));
+    //         // setTrainingCompleted(true);
+    //         setActiveStep(3);
+    //     }
+    // }, []);
+
     const handleTraining = async (event) => {
         event.preventDefault();
-        try {
-            setLoading(true); // Start loading
+        setTrainingCompleted(false);
+        setLoading(true); // Start loading
 
-            // Simulate a 5-second delay
-            await new Promise(resolve => setTimeout(resolve, 5000));
-
-            // setApiResponse('Simulated API response'); // Update the API response
-        } catch (error) {
-            console.error('API error:', error);
-        } finally {
-            setLoading(false); // Stop loading
-            setTrainingCompleted(true);
-        }
+        axios.post(process.env.REACT_APP_TRAIN_URL, {
+            'dataset_name': selectedDataset,
+            'model_type' : modelType,
+            'custom_model_type': customModelType,
+            'objective': objective,
+            'metric_type': metricType,
+            'custom_metric_type': customMetricType,
+            'model_name': modelName,
+            'target_column': targetColumn,
+        })
+            .then((response) => {
+                setTrainingResponse(response.data);
+                localStorage.setItem('trainingResponse', JSON.stringify(response.data));
+                console.log(response.data);
+                setLoading(false); // Stop loading
+                setTrainingCompleted(true);
+            })
     }
 
     return (
@@ -129,13 +161,145 @@ function Train() {
                     </Box>
                     {activeStep === steps.length ? (
                         <React.Fragment>
-                            <Typography sx={{ mt: 2, mb: 1 }}>
-                                All steps completed - you&apos;re finished
-                            </Typography>
-                            <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                                <Box sx={{ flex: '1 1 auto' }} />
-                                <Button onClick={handleReset}>Reset</Button>
-                            </Box>
+                            <Row>
+                                <Col md="12" className="text-center" >
+                                    <Typography variant="h4" style={{ color: 'black' }}>
+                                        Training Summary 
+                                    </Typography>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    {trainingResponse.model_type.toLowerCase() == 'automl' ?
+                                        <Typography sx={{ mt: 2, mb: 1 }} variant="h6">
+                                            Training Mode: AutoML
+                                        </Typography>
+                                        :
+                                        <Typography sx={{ mt: 2, mb: 1 }} variant="h6">
+                                            Training Mode: Manual
+                                        </Typography>    
+                                }
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                {trainingResponse.model_type.toLowerCase() == 'automl' ?
+                                    <Typography sx={{ mt: 2 }} variant="subtitle1">
+                                        Best Model: {trainingResponse.best_model_name}
+                                    </Typography>
+                                    : 
+                                    <Typography sx={{ mt: 2, mb: 1 }} variant="h6">
+                                        Model Selected: {trainingResponse.best_model_name}
+                                    </Typography>
+                                }
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                {trainingResponse.model_type.toLowerCase() == 'automl' ?
+                                    <Typography sx={{ mt: 2, mb: 1 }} variant="body2">
+                                        Metric Optimized: {trainingResponse.metric_type}
+                                    </Typography>
+                                    : null}
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col md="6">
+                                    <Typography sx={{ mt: 2, mb: 1 }}  variant="subtitle1">
+                                        Parameters of the model
+                                    </Typography>
+                                    <Table striped>
+                                        <thead>
+                                            <tr>
+                                                <th>Parameter</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {trainingResponse.parameters.map((parameter) => (
+                                                <tr>
+                                                    <td>{parameter.parameter_name}</td>
+                                                    <td>{parameter.parameter_value}</td>
+                                                </tr>
+                                            ))}
+                                            </tbody>
+                                    </Table>
+                                </Col>
+                                <Col md="6">
+                                    <Typography sx={{ mt: 2, mb: 1 }} variant="subtitle1">
+                                        Metrics of the model
+                                    </Typography>
+                                    <Table striped>
+                                        <thead>
+                                            <tr>
+                                                <th>Metric</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {trainingResponse.metrics.map((metric) => (
+                                                <tr>
+                                                    <td>{metric.metric_name}</td>
+                                                    <td>{metric.metric_value}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </Col>
+                            </Row>
+                            { trainingResponse.model_type.toLowerCase() == 'automl' ?
+                            <Row>
+                                <Col>
+                                    <Accordion
+                                        sx={{
+                                            '&.MuiPaper-root': {
+                                                backgroundColor: 'transparent',
+                                                boxShadow: 'none',
+                                            },
+                                        }}
+                                    >
+                                        <AccordionSummary
+                                            expandIcon={<ExpandMoreIcon />}
+                                        >
+                                            Show scores of all models
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Table striped>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Model Type</th>
+                                                        {
+
+                                                            Object.keys(trainingResponse.all_models_results[0])
+                                                                .map((metric) => {
+                                                                    return (
+                                                                        <>
+                                                                            {metric != 'Model' ? <th>{metric}</th> : null}
+                                                                        </>
+                                                                    )
+                                                                }
+                                                                )
+                                                        }
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {trainingResponse.all_models_results.map((model) => (
+                                                        <tr>
+                                                            <td>{model.Model}</td>
+                                                            <td>{model.AUC}</td>
+                                                            <td>{model.Accuracy}</td>
+                                                            <td>{model.F1}</td>
+                                                            <td>{model['Prec.']}</td>
+                                                            <td>{model.Recall}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </Table>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </Col>
+                            </Row>
+                            : null}
                         </React.Fragment>
                     ) : (
                         <React.Fragment>
@@ -272,16 +436,31 @@ function Train() {
                                                         </div>
                                                     }
                                                 />
-                                                {metricType == "CustomMetric" ? <div>
+                                                {metricType == "CustomMetric" && objective.toLowerCase() == 'classification' ? <div>
                                                     <FormControl fullWidth>
                                                         <InputLabel id="label">Select Metric</InputLabel>
                                                         <Select
                                                             labelId="label"
                                                             label="Select Classifier"
                                                             fullWidth
-                                                        // onChange={handleChange}
+                                                            onChange={(e) => setCustomMetricType(e.target.value)}
                                                         >
-                                                            {metrics.map((column) => (
+                                                            {classificationMetrics.map((column) => (
+                                                                <MenuItem value={column}>{column}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                </div> : null}
+                                                {metricType == "CustomMetric" && objective.toLowerCase() == 'regression' ? <div>
+                                                    <FormControl fullWidth>
+                                                        <InputLabel id="label">Select Metric</InputLabel>
+                                                        <Select
+                                                            labelId="label"
+                                                            label="Select Regressor"
+                                                            fullWidth
+                                                            onChange={(e) => setCustomMetricType(e.target.value)}
+                                                        >
+                                                            {regressionMetrics.map((column) => (
                                                                 <MenuItem value={column}>{column}</MenuItem>
                                                             ))}
                                                         </Select>
@@ -292,15 +471,15 @@ function Train() {
                                     </Col>
                                 </Row>
                                 <Row className=" mb-3">
-                                    <Col md="2" className="mt-3">
+                                    <Col md="2" style={{ marginTop: "1rem" }}>
                                         Select Model Type:
                                     </Col>
-                                    <Col>
+                                    <Col md="6">
                                         <FormControl>
                                             <RadioGroup
                                                 aria-labelledby="demo-controlled-radio-buttons-group"
                                                 // name="controlled-radio-buttons-group"
-                                                row
+                                                // row
                                                 value={modelType}
                                                 onChange={handleModelTypeChange}
                                             >
@@ -310,7 +489,7 @@ function Train() {
                                                     label={
                                                         <div style={{ marginTop: '0.8rem' }}>
                                                             AutoML
-                                                            <div style={{ fontSize: '12px', color: 'gray', maxWidth: '50%' }}>
+                                                            <div style={{ fontSize: '12px', color: 'gray' }}>
                                                                 Train a classifier automatically which maximizes the selected metric. The model is trained using various algorithms and the best one is selected.
                                                             </div>
                                                         </div>
@@ -328,16 +507,31 @@ function Train() {
                                                         </div>
                                                     }
                                                 />
-                                                {modelType == "CustomModel" ? <div>
+                                                {modelType == "CustomModel" && objective.toLowerCase() == 'classification' ? <div>
                                                     <FormControl fullWidth>
                                                         <InputLabel id="label">Select Classifier</InputLabel>
                                                         <Select
                                                             labelId="label"
                                                             label="Select Classifier"
                                                             fullWidth
-                                                        // onChange={handleChange}
+                                                            onChange={(e) => setCustomModelType(e.target.value)}
                                                         >
                                                             {classifiers.map((column) => (
+                                                                <MenuItem value={column}>{column}</MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                </div> : null}
+                                                {modelType == "CustomModel" && objective.toLowerCase() == 'regression' ? <div>
+                                                    <FormControl fullWidth>
+                                                        <InputLabel id="label">Select Regressor</InputLabel>
+                                                        <Select
+                                                            labelId="label"
+                                                            label="Select Regressor"    
+                                                            fullWidth
+                                                            onChange={(e) => setCustomModelType(e.target.value)}
+                                                        >
+                                                            {regressors.map((column) => (
                                                                 <MenuItem value={column}>{column}</MenuItem>
                                                             ))}
                                                         </Select>
@@ -379,7 +573,7 @@ function Train() {
                                         Model Type:
                                     </Col>
                                     <Col md="6">
-                                        {modelType}
+                                        {modelType == 'CustomModel' ? <> {customModelType} (Manual)</> : modelType} 
                                     </Col>
                                 </Row>
                                 <Row className="mb-3">
@@ -403,7 +597,7 @@ function Train() {
                                         Optimization Metric:
                                     </Col>
                                     <Col md="6">
-                                        {metricType}
+                                        {metricType == 'CustomMetric' ? <>{customMetricType} (Manual) </> : metricType}
                                     </Col>
                                 </Row>
                                 <Row className="mb-3">
@@ -413,7 +607,23 @@ function Train() {
                                 </Row>
                                 <Row>
                                     <Col>
-                                        {loading ? <LinearProgress /> : null}
+                                        {loading ? <>
+                                            <LinearProgress />
+                                            <Typography variant="body2" mt="1rem">
+                                                Please wait while the model is being trained...
+                                            </Typography>
+                                        </> : null}
+
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col>
+                                        {trainingCompleted ? <>
+                                            <Typography variant="h6" style={{ color: 'green' }}>
+                                                <CheckCircleIcon color='success' /> Training Completed Successfully.
+                                            </Typography>
+                                            Click on Finish to view the model details.
+                                        </> : null}
                                     </Col>
                                 </Row>
                             </div> : null}
@@ -431,14 +641,14 @@ function Train() {
                                 {/* <Button onClick={handleNext}>
                                     {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
                                 </Button> */}
-                                {activeStep === steps.length - 1 ? 
-                                    <Button 
+                                {activeStep === steps.length - 1 ?
+                                    <Button
                                         onClick={handleNext}
-                                        disabled={!trainingCompleted}
+                                    // disabled={!trainingCompleted}
                                     >
                                         Finish
                                     </Button>
-                                : 
+                                    :
                                     <Button
                                         onClick={handleNext}
                                     >
