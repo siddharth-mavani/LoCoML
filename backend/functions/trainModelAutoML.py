@@ -34,7 +34,7 @@ metric_type_reverse_map = {
 
 def trainModelAutoML(dataset_name, model_name, target_column, metric_type, objective):
 
-    dataset_path = './Datasets/'+dataset_name
+    dataset_path = './processedDatasets/'+dataset_name
     df = pd.read_csv(dataset_path)
 
     if objective.lower() == 'classification':

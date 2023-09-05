@@ -53,7 +53,7 @@ def trainModelCustom(dataset_name, model_name, target_column, model_type, metric
     elif objective.lower() == 'regression':
         exp = RegressionExperiment()
 
-    dataset_path = './Datasets/'+dataset_name
+    dataset_path = './processedDatasets/'+dataset_name
     df = pd.read_csv(dataset_path)
 
     if metric_type.lower() == 'autoselect':

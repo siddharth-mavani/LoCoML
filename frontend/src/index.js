@@ -26,13 +26,16 @@ import "assets/demo/demo.css";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 import AdminLayout from "layouts/Admin.js";
+import ModelDetails from "views/ModelDetails.js";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <BrowserRouter>
     <Routes>
-      <Route path="/*" element={<AdminLayout />} />
+      <Route path="/*" element={<AdminLayout />}>
+        {/* <Route path="models/:model_name" element={<ModelDetails />} /> */}
+      </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   </BrowserRouter>
