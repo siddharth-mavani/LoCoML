@@ -20,6 +20,7 @@ function DataPreprocessing() {
 
     const [loading, setLoading] = React.useState(false)
     const [selectedDataset, setSelectedDataset] = useState("");
+    const [preprocessingCompleted, setPreprocessingCompleted] = useState(false);
     const [preProcessingType, setPreProcessingType] = useState("Automatic");
 
     const [datasets, setDatasets] = useState([]);
@@ -30,6 +31,8 @@ function DataPreprocessing() {
         'Interpolate Missing Values': false,
         'Normalise Features': false,
       });
+
+    const [preprocessedData, setPreprocessedData] = useState([{}]);
 
     const classes = useStyles();
     const navigate = useNavigate();
@@ -93,17 +96,11 @@ function DataPreprocessing() {
         }
 
         try {
-            setLoading(true); // Start loading
-
-            // Simulate a 5-second delay
+            setLoading(true);
             await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // setApiResponse('Simulated API response'); // Update the API response
         } catch (error) {
             console.error('API error:', error);
         } finally {
-
-
             // Send request to backend to begin preprocessing
             axios.post(process.env.REACT_APP_PREPROCESSING_URL, {
                 name: selectedDataset + '.csv',
@@ -112,12 +109,26 @@ function DataPreprocessing() {
             .then((response) => {
                 console.log(response.data);
                 setLoading(false);
-                // navigate("/train");
+                setPreprocessingCompleted(true);
+
+                const normalized_columns = response.data['normalized_columns'];
+                const num_duplicate = response.data['num_duplicate'];
+                const num_interpolate = response.data['num_interpolate'];
+
+                setPreprocessedData({
+                    normalized_columns: normalized_columns,
+                    num_duplicate: num_duplicate,
+                    num_interpolate: num_interpolate
+                });
             })
             .catch((error) => {
                 console.log(error);
             });
         }
+    }
+
+    const handleTraining = () => {
+        navigate("/train");
     }
 
 
@@ -131,6 +142,41 @@ function DataPreprocessing() {
                 <Row>
                     <Col md="12">
                         {selectedDataset !== "" ? (
+                            (preprocessingCompleted === true ? (
+                                <>
+                                <Card className="card-plain">
+                                    <CardHeader>
+                                    <CardTitle tag="h2">Preprocessing Completed</CardTitle>
+                                    </CardHeader>
+                                    <CardBody>
+                                        {console.log(preprocessedData)}
+                                        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                                        <tr>
+                                            <th style={{ border: '1px solid black', padding: '8px' }}>Number of Duplicate Rows Dropped</th>
+                                            <td style={{ border: '1px solid black', padding: '8px' }}>{preprocessedData['num_duplicate']}</td>
+                                        </tr>
+                                        <tr>
+                                            <th style={{ border: '1px solid black', padding: '8px' }}>Number of Rows Interpolated</th>
+                                            <td style={{ border: '1px solid black', padding: '8px' }}>{preprocessedData['num_interpolate']}</td>
+                                        </tr>
+                                        <tr>
+                                            <th style={{ border: '1px solid black', padding: '8px' }}>Normalized Features</th>
+                                            <td style={{ border: '1px solid black', padding: '8px' }}>
+                                                <ul>
+                                                {preprocessedData['normalized_columns'].map((column, index) => (
+                                                    <li key={index}>{column}</li>
+                                                ))}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        </table>
+                                    
+                                        <Button color="success" onClick={handleTraining}>Begin Training</Button>
+
+                                    </CardBody>
+                                </Card>
+                                </>
+                            ) : (
                             <>
                             <Card className="card-plain">
                                 <CardHeader>
@@ -205,7 +251,7 @@ function DataPreprocessing() {
                                 </CardBody>
                             </Card>
                             </>
-                        ): (
+                        ))): (
                             <>
                             <Card className="card-plain">
                                 <CardHeader>
@@ -215,8 +261,8 @@ function DataPreprocessing() {
                                 <Table responsive>
                                     <thead className="text-primary">
                                     <tr>
-                                        <th className="text-center">Name</th>
-                                        <th className="text-center">Option</th>
+                                        <th className="text-center" style={{ color: 'black' }}>Name</th>
+                                        <th className="text-center" style={{ color: 'black' }}>Option</th>
                                     </tr>
                                     </thead>
                                     <tbody>
