@@ -106,7 +106,6 @@ function DataPreprocessing() {
                 name: selectedDataset + '.csv',
                 tasks: finalTasks
             })
-<<<<<<< HEAD
             .then((response) => {
                 console.log(response.data);
                 setLoading(false);
@@ -125,16 +124,6 @@ function DataPreprocessing() {
             .catch((error) => {
                 console.log(error);
             });
-=======
-                .then((response) => {
-                    console.log(response.data);
-                    setLoading(false);
-                    // navigate("/train");
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
->>>>>>> cf56044aed424d34d07e52e6bc099569a87d1f61
         }
     }
 
@@ -262,7 +251,6 @@ function DataPreprocessing() {
                                     </CardBody>
                                 </Card>
                             </>
-<<<<<<< HEAD
                         ))): (
                             <>
                             <Card className="card-plain">
@@ -290,35 +278,6 @@ function DataPreprocessing() {
                                 </Table>
                                 </CardBody>
                             </Card>
-=======
-                        ) : (
-                            <>
-                                <Card className="card-plain">
-                                    <CardHeader>
-                                        <CardTitle tag="h2">Datasets</CardTitle>
-                                    </CardHeader>
-                                    <CardBody>
-                                        <Table responsive>
-                                            <thead className="text-primary">
-                                                <tr>
-                                                    <th className="text-center">Name</th>
-                                                    <th className="text-center">Option</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {datasets.map((dataset, index) => (
-                                                    <tr key={index}>
-                                                        <td className="text-center">{dataset}</td>
-                                                        <td className="text-center">
-                                                            <Button color="info" onClick={() => handleSelect(dataset)}>Select</Button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </Table>
-                                    </CardBody>
-                                </Card>
->>>>>>> cf56044aed424d34d07e52e6bc099569a87d1f61
                             </>
                         )}
                     </Col>
