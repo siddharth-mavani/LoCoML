@@ -16,3 +16,9 @@ def getTrainedModelList():
         trained_model_list.append(json_util.dumps(model))
         
     return {'trained_models': trained_model_list}
+
+@getTrainedModels.route('/getTrainedModels/<model_name>', methods=['GET'])
+def getTrainedModel(model_name):
+    collection = db['Models_Trained']
+    trained_model = collection.find_one({'model_name': model_name})
+    return json_util.dumps(trained_model)

@@ -23,23 +23,27 @@ import DataPreprocessing from "views/DataPreprocessing";
 import EDA from "views/EDA";
 import Train from "views/train";
 import TrainedModels from "views/TrainedModels";
+import ModelDetails from "views/ModelDetails";
 
 var routes = [
   {
     path: "/dashboard",
     name: "Dashboard",
+    showInSidebar: true,
     // icon: "nc-icon nc-bank",
     component: <Dashboard />,
   },
   {
     path: "/upload-data",
     name: "Upload Data",
+    showInSidebar: true,
     // icon: "nc-icon nc-cloud-upload-94",
     component: <UploadData />,
   },
   {
     path: "/eda",
     name: "Exploratory Data Analysis",
+    showInSidebar: true,
     // icon: "nc-icon nc-cloud-upload-94",
     component: <EDA />,
     layout: "/admin",
@@ -47,27 +51,29 @@ var routes = [
   {
     path: "/data-preprocessing",
     name: "Data Preprocessing",
+    showInSidebar: true,
     // icon: "nc-icon nc-tile-56",
     component: <DataPreprocessing />,
   },
   {
     path: "/train",
     name: "Train",
+    showInSidebar: true,
     // icon: "nc-icon nc-cloud-upload-94",
     component: <Train />,
   },
   {
     path: "/models",
     name: "Trained Models",
+    showInSidebar: true,
     // icon: "nc-icon nc-cloud-upload-94",
     component: <TrainedModels />,
   },
-  // {
-  //   path: "/preview",
-  //   name: "Preview",
-  //   icon: "nc-icon nc-cloud-upload-94",
-  //   component: <Preview />,
-  //   layout: "/admin",
-  // },  
+  {
+    path: "/models/:model_name",
+    name: "Model Details",
+    showInSidebar: false,
+    component: <ModelDetails />,
+  }
 ];
 export default routes;

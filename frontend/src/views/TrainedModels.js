@@ -9,12 +9,17 @@ import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { IconButton } from "@mui/material";
-
+import { CircularProgress, Typography } from "@mui/material";
 function TrainedModels() {
-
+    const [loading, setLoading] = React.useState(true);
     const [trainedModels, setTrainedModels] = React.useState([]);
 
     React.useEffect(() => {
+        // wait for 3 seconds
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 1000);
+
 
         axios.get("http://localhost:5000/getTrainedModels")
             .then(async (response) => {
@@ -25,11 +30,14 @@ function TrainedModels() {
                     temp.push(parsed_model);
                 }
                 setTrainedModels(temp);
-                console.log(temp);
+                // console.log(temp);
+                // setLoading(false);
             })
             .catch((error) => {
                 console.log(error);
             })
+
+        return () => clearTimeout(timer);
     }, []);
 
     function getDateFromTimestamp(timestamp) {
@@ -73,49 +81,69 @@ function TrainedModels() {
 
     return (
         <div className="content">
-            <Table striped bordered hover>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Date</TableCell>
-                        <TableCell>Time</TableCell>
-                        <TableCell>Dataset</TableCell>
-                        <TableCell>Model Name</TableCell>
-                        <TableCell>Training Type</TableCell>
-                        <TableCell>Model Type</TableCell>
-                        <TableCell>Objective</TableCell>
-                        <TableCell>Target Column</TableCell>
-                        <TableCell>Metric</TableCell>
-                        <TableCell>Value</TableCell>
-                        <TableCell>Download</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {trainedModels.map((model, index) => {
-                        return (
-                            <TableRow key={index}>
-                                <TableCell>{getDateFromTimestamp(model.time)}</TableCell>
-                                <TableCell>{getTimeIn12Hours(model.time)}</TableCell>
-                                <TableCell>{model.dataset_name}</TableCell>
-                                <TableCell>{model.model_name}</TableCell>
-                                <TableCell>{model.model_type}</TableCell>
-                                <TableCell>{model.best_model_name}</TableCell>
-                                <TableCell>{model.objective}</TableCell>
-                                <TableCell>{model.target_column}</TableCell>
-                                <TableCell>{model.metric_type}</TableCell>
-                                <TableCell>{getMetricValue(model.metrics, model.metric_type)}</TableCell>
-                                <TableCell><IconButton 
-                                                size="small" 
-                                                color="primary" 
-                                                onClick={() => downloadModel(model.pickled_model)}
-                                                > 
-                                                    <FileDownloadIcon /> 
-                                                </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
+            {loading ?
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+                    <CircularProgress /> <br />
+                    <Typography variant="h6" style={{ marginLeft: '10px' }}>
+                        Fetching Trained Models <br />
+                    </Typography>
+                    <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
+                        Please wait...
+                    </Typography>
+                </div> :
+                <Table striped bordered hover>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Date</TableCell>
+                            <TableCell>Time</TableCell>
+                            <TableCell>Dataset</TableCell>
+                            <TableCell>Model Name</TableCell>
+                            <TableCell>Training Type</TableCell>
+                            <TableCell>Model Type</TableCell>
+                            <TableCell>Objective</TableCell>
+                            <TableCell>Target Column</TableCell>
+                            <TableCell>Metric</TableCell>
+                            <TableCell>Value</TableCell>
+                            <TableCell>Download</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {trainedModels.map((model, index) => {
+                            return (
+                                <TableRow key={index}>
+                                    <TableCell>{getDateFromTimestamp(model.time)}</TableCell>
+                                    <TableCell>{getTimeIn12Hours(model.time)}</TableCell>
+                                    <TableCell>{model.dataset_name}</TableCell>
+                                    <TableCell
+                                        style={{
+                                            cursor: 'pointer'
+                                        }}
+                                        onClick={() => window.location.href = `/models/${model.model_name}`}
+                                    >
+                                        <Typography variant="body1" style={{ color: '#007bff' }}>
+                                            {model.model_name}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell>{model.model_type}</TableCell>
+                                    <TableCell>{model.best_model_name}</TableCell>
+                                    <TableCell>{model.objective.charAt(0).toUpperCase() + model.objective.slice(1)}</TableCell>
+                                    <TableCell>{model.target_column}</TableCell>
+                                    <TableCell>{model.metric_type}</TableCell>
+                                    <TableCell>{getMetricValue(model.metrics, model.metric_type)}</TableCell>
+                                    <TableCell><IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={() => downloadModel(model.pickled_model)}
+                                    >
+                                        <FileDownloadIcon />
+                                    </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            }
         </div>
     );
 }
