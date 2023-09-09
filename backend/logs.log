@@ -21376,6 +21376,39 @@ Alternately, you can install this by running `pip install pycaret[models]`
                        n_estimators=100, n_jobs=-1, oob_score=False,
                        random_state=123, verbose=0, warm_start=False)
 2023-09-04 18:36:04,723:INFO:create_model() successfully completed......................................
+<<<<<<< HEAD
+2023-09-05 11:35:46,175:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:35:46,176:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:35:46,176:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:35:46,176:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:42:49,255:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:42:49,256:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:42:49,256:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:42:49,256:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:47:37,045:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:47:37,046:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:47:37,046:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:47:37,046:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:48:30,564:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:48:30,564:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:48:30,564:WARNING:
+'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
+2023-09-05 11:48:30,565:WARNING:
+=======
 2023-09-04 22:21:38,781:INFO:PyCaret ClassificationExperiment
 2023-09-04 22:21:38,781:INFO:Logging name: clf-default-name
 2023-09-04 22:21:38,781:INFO:ML Usecase: MLUsecase.CLASSIFICATION
@@ -22832,6 +22865,7 @@ AttributeError: probability estimates are not available for loss='hinge'
 2023-09-05 11:58:58,791:WARNING:
 'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
 2023-09-05 11:58:58,791:WARNING:
+>>>>>>> cf56044aed424d34d07e52e6bc099569a87d1f61
 'cuml' is a soft dependency and not included in the pycaret installation. Please run: `pip install cuml` to install.
 2023-09-05 14:42:30,815:INFO:PyCaret ClassificationExperiment
 2023-09-05 14:42:30,816:INFO:Logging name: clf-default-name
