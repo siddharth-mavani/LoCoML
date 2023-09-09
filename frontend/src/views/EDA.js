@@ -126,6 +126,8 @@ return (
                 <td>{info.index}</td>
                 <td>{info.variableType}</td>
                 <td>{info.numUniqueValues}</td>
+                {/* /* show till 2 decimal places */}
+                {/* <td>{info.mean.toFixed(2)}</td> */}
                 <td>{info.mean}</td>
                 <td>{info.stdDev}</td>
                 <td>{info.median}</td>
