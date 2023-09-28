@@ -22,7 +22,8 @@
     "react-scripts": "5.0.1",
     "reactstrap": "^8.10.0",
     "rsuite": "^5.37.4",
-    "sass": "1.62.1"
+    "sass": "1.62.1",
+    "socket.io-client": "^4.7.2"
   },
   "scripts": {
     "start": "react-scripts start",

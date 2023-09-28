@@ -3,8 +3,12 @@ from pycaret.regression import RegressionExperiment
 import pandas as pd
 import datetime
 import pickle
+import nanoid
+import os
 import sys 
-sys.path.append('../')
+
+project_path = os.getenv('PROJECT_PATH')
+sys.path.append(project_path)
 
 from mongo import db
 
@@ -32,9 +36,10 @@ metric_type_reverse_map = {
     'RMSE' : 'Root Mean Squared Error',
 }
 
-def trainModelAutoML(dataset_name, model_name, target_column, metric_type, objective):
+def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_type, objective):
+    
 
-    dataset_path = './processedDatasets/'+dataset_name
+    dataset_path = os.getenv('PROJECT_PATH') + 'Datasets/'+dataset_id+'.csv'
     df = pd.read_csv(dataset_path)
 
     if objective.lower() == 'classification':
@@ -42,8 +47,7 @@ def trainModelAutoML(dataset_name, model_name, target_column, metric_type, objec
     elif objective.lower() == 'regression':
         exp = RegressionExperiment()
 
-    if metric_type.lower() == 'autoselect':
-
+    if metric_mode.lower() == 'autoselect':
         if objective.lower() == 'classification':
 
             class_dist = df[target_column].value_counts()
@@ -55,9 +59,7 @@ def trainModelAutoML(dataset_name, model_name, target_column, metric_type, objec
                 metric_type = 'AUC'
             
         elif objective.lower() == 'regression':
-
             metric_type = 'R2'
-
 
     df = df[df[target_column].notnull()]
     
@@ -99,25 +101,49 @@ def trainModelAutoML(dataset_name, model_name, target_column, metric_type, objec
             'parameter_value' : value
         })
 
-    pickled_model = pickle.dumps(best)
+    print("Saving Model", file=sys.stderr)
+    model_id = nanoid.generate(alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', size=6)
+    save_path = os.getenv('PROJECT_PATH') + 'Models/' + model_id
+    exp.save_model(best, save_path)
+    print("Transformation Pipeline and Model Successfully Saved", file=sys.stderr)
 
-    collection = db['Models_Trained']
+    input_schema = exp.get_config('X_train').columns.to_list()
+    output_schema = [target_column]
+
+    collection = db['Model_zoo']
 
     details = {
         'time' : datetime.datetime.now(),
+        'model_id' : model_id,
         'model_name' : model_name,
-        'pickled_model': 'empty',
-        'dataset_name' : dataset_name,
-        'target_column' : target_column,
-        'objective' : objective,
+        'training_mode' : 'AutoML',
+        'estimator_type' : best_model_name,
+        'metric_mode' : metric_mode,
         'metric_type' : metric_type,
-        'model_type' : 'AutoML',
-        'best_model_name' : best_model_name,
+        'saved_model_path' : save_path,
+        'dataset_id' : dataset_id,
+        'objective' : objective,
+        'target_column' : target_column,
         'parameters' : parameters,
-        'metrics' : metrics,
+        'evaluation_metrics' : metrics,
         'all_models_results' : results.to_dict('records'),
+        'input_schema' : input_schema,
+        'output_schema' : output_schema,
     }
 
     collection.insert_one(details)
     details.pop('_id')
     return details
+
+dataset_id = sys.argv[1]
+model_name = sys.argv[2]
+target_column = sys.argv[3]
+metric_mode = sys.argv[4]
+metric_type = sys.argv[5]
+objective = sys.argv[6]
+model_type = sys.argv[7] # not needed in automl
+
+details = trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_type, objective)
+details_path = os.getenv('PROJECT_PATH') + 'Usage/details.pkl'
+with open(details_path, 'wb') as f:
+    pickle.dump(details, f)

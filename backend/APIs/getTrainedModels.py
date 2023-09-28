@@ -9,7 +9,7 @@ getTrainedModels = Blueprint('getTrainedModels', __name__)
 
 @getTrainedModels.route('/getTrainedModels', methods=['GET'])
 def getTrainedModelList():
-    collection = db['Models_Trained']
+    collection = db['Model_zoo']
     trained_model_list = []
 
     for model in collection.find():
@@ -17,8 +17,8 @@ def getTrainedModelList():
         
     return {'trained_models': trained_model_list}
 
-@getTrainedModels.route('/getTrainedModels/<model_name>', methods=['GET'])
-def getTrainedModel(model_name):
-    collection = db['Models_Trained']
-    trained_model = collection.find_one({'model_name': model_name})
+@getTrainedModels.route('/getTrainedModels/<model_id>', methods=['GET'])
+def getTrainedModel(model_id):
+    collection = db['Model_zoo']
+    trained_model = collection.find_one({'model_id': model_id})
     return json_util.dumps(trained_model)

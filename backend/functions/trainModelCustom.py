@@ -3,8 +3,12 @@ from pycaret.regression import RegressionExperiment
 import pandas as pd
 import datetime
 import pickle
-import sys 
-sys.path.append('../')
+import os
+import nanoid
+import sys
+
+project_path = os.getenv('PROJECT_PATH')
+sys.path.append(project_path)
 
 from mongo import db
 
@@ -46,17 +50,19 @@ model_map = {
     'Bayesian Ridge' : 'br',
 }
 
-def trainModelCustom(dataset_name, model_name, target_column, model_type, metric_type, objective):
+def trainModelCustom(dataset_id, model_name, target_column, model_type, metric_mode, metric_type, objective):
+
+    dataset_path = os.getenv('PROJECT_PATH') + 'Datasets/'+dataset_id+'.csv'
+    df = pd.read_csv(dataset_path)
 
     if objective.lower() == 'classification':
         exp = ClassificationExperiment()
     elif objective.lower() == 'regression':
         exp = RegressionExperiment()
 
-    dataset_path = './processedDatasets/'+dataset_name
-    df = pd.read_csv(dataset_path)
-
-    if metric_type.lower() == 'autoselect':
+    
+    # metric_type = ''
+    if metric_mode.lower() == 'autoselect':
 
         if objective.lower() == 'classification':
 
@@ -69,7 +75,6 @@ def trainModelCustom(dataset_name, model_name, target_column, model_type, metric
                 metric_type = 'AUC'
             
         elif objective.lower() == 'regression':
-
             metric_type = 'R2'
 
     df = df[df[target_column].notnull()]
@@ -105,25 +110,47 @@ def trainModelCustom(dataset_name, model_name, target_column, model_type, metric
             'parameter_value' : value
         })
     
-    pickled_model = pickle.dumps(model)
+    model_id = nanoid.generate(alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', size=6)
+    save_path = os.getenv('PROJECT_PATH') + 'Models/' + model_id
+    exp.save_model(model, save_path)
 
-    collection = db['Models_Trained']
+    input_schema = exp.get_config('X_train').columns.to_list()
+    output_schema = [target_column]
+
+    collection = db['Model_zoo']
 
     details = {
         'time' : datetime.datetime.now(),
+        'model_id' : model_id,
         'model_name' : model_name,
-        'pickled_model': 'empty',
-        'dataset_name' : dataset_name,
-        'target_column' : target_column,
-        'objective' : objective,
+        'training_mode' : 'Manual',
+        'estimator_type' : model_type,
+        'metric_mode' : metric_mode,
         'metric_type' : metric_type,
-        'model_type' : 'Manual',
-        'best_model_name' : model_type,
+        'saved_model_path' : save_path,
+        'dataset_id' : dataset_id,
+        'objective' : objective,
+        'target_column' : target_column,
         'parameters' : parameters,
-        'metrics' : metrics,
-        'all_models_results' : 'Not Applicable',
+        'evaluation_metrics' : metrics,
+        'all_models_results' : [],
+        'input_schema' : input_schema,
+        'output_schema' : output_schema,
     }
                     
     collection.insert_one(details)
     details.pop('_id')
     return details
+
+dataset_id = sys.argv[1]
+model_name = sys.argv[2]
+target_column = sys.argv[3]
+metric_mode = sys.argv[4]
+metric_type = sys.argv[5]
+objective = sys.argv[6]
+model_type = sys.argv[7]
+
+details = trainModelCustom(dataset_id, model_name, target_column, model_type, metric_mode, metric_type, objective)
+details_path = os.getenv('PROJECT_PATH') + 'Usage/details.pkl'
+with open(details_path, 'wb') as f:
+    pickle.dump(details, f)

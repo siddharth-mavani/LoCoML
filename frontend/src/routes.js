@@ -24,6 +24,7 @@ import EDA from "views/EDA";
 import Train from "views/train";
 import TrainedModels from "views/TrainedModels";
 import ModelDetails from "views/ModelDetails";
+import Delete from "views/Delete";
 
 var routes = [
   {
@@ -74,6 +75,12 @@ var routes = [
     name: "Model Details",
     showInSidebar: false,
     component: <ModelDetails />,
+  },
+  {
+    path: "/delete",
+    name: "Delete",
+    showInSidebar: false,
+    component: <Delete />,
   }
 ];
 export default routes;

@@ -9,7 +9,7 @@ import { Col, Row, Button as ReactStrapButton } from "reactstrap";
 import { Table as ReactStrapTable } from "reactstrap";
 function ModelDetails() {
     // console.log("ModelDetails");
-    const modelName = window.location.pathname.split("/")[2];
+    const model_id = window.location.pathname.split("/")[2];
     const [loading, setLoading] = React.useState(true);
     const [modelDetails, setModelDetails] = React.useState({});
 
@@ -19,7 +19,7 @@ function ModelDetails() {
             setLoading(false);
         }, 1000);
 
-        axios.get(`http://localhost:5000/getTrainedModels/${modelName}`)
+        axios.get(`http://localhost:5000/getTrainedModels/${model_id}`)
             .then(async (response) => {
                 setModelDetails(response.data);
                 console.log(response.data);
@@ -58,7 +58,7 @@ function ModelDetails() {
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
                     <CircularProgress /> <br />
                     <Typography variant="body1" style={{ marginLeft: '10px' }}>
-                        Fetching Model details for {modelName} <br />
+                        Fetching Model details for {model_id} <br />
                     </Typography>
                     <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
                         Please wait...
@@ -67,7 +67,12 @@ function ModelDetails() {
                 <div>
                     <Row style={{marginBottom: "0.5rem"}}>
                         <Col>
-                            Dataset: {modelDetails.dataset_name}
+                            Dataset: {modelDetails.dataset_id}
+                        </Col>
+                    </Row>
+                    <Row style={{marginBottom: "0.5rem"}}>
+                        <Col>
+                            Model ID: {modelDetails.model_id}
                         </Col>
                     </Row>
                     <Row style={{marginBottom: "0.5rem"}}>
@@ -75,12 +80,12 @@ function ModelDetails() {
                             Model Name: {modelDetails.model_name}
                         </Col>
                         <Col md="6">
-                            Model Type: {modelDetails.best_model_name}
+                            Model Type: {modelDetails.estimator_type}
                         </Col>
                     </Row>
                     <Row style={{marginBottom: "0.5rem"}}>
                         <Col md="6">
-                            Training Mode: {modelDetails.model_type}
+                            Training Mode: {modelDetails.training_mode}
                         </Col>
                         <Col md="6">
                             Objective: {modelDetails.objective}
@@ -138,7 +143,7 @@ function ModelDetails() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {modelDetails.metrics.map((metric, index) => {
+                                    {modelDetails.evaluation_metrics.map((metric, index) => {
                                         return (
                                             <TableRow hover size='small' key={index}>
                                                 <TableCell>{metric.metric_name}</TableCell>
@@ -150,7 +155,7 @@ function ModelDetails() {
                             </Table>
                         </Col>
                     </Row>
-                    {modelDetails.model_type.toLowerCase() == 'automl' ?
+                    {modelDetails.training_mode.toLowerCase() == 'automl' ?
                         <Row>
                             <Col>
                                 <Accordion
