@@ -80,7 +80,7 @@ function Train() {
     const [modelName, setModelName] = React.useState('');
     const [trainingCompleted, setTrainingCompleted] = React.useState(false);
     const [trainingResponse, setTrainingResponse] = React.useState();
-    
+
     const [trainingStatus, setTrainingStatus] = React.useState({
         progress: 0,
         status: 'Initialising',
@@ -186,7 +186,7 @@ function Train() {
 
         axios.post(process.env.REACT_APP_TRAIN_URL, {
             'dataset_id': selectedDatasetID,
-            'training_mode' : trainingMode,
+            'training_mode': trainingMode,
             'model_type': modelType,
             'objective': objective,
             'metric_mode': metricMode,
@@ -244,6 +244,13 @@ function Train() {
                                             Training Mode: Manual
                                         </Typography>
                                     }
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col>
+                                    <Typography sx={{mt:2}} variant='subtitle1'>
+                                        Model ID: {trainingResponse.model_id}
+                                    </Typography>
                                 </Col>
                             </Row>
                             <Row>
@@ -339,7 +346,7 @@ function Train() {
                                                                     .map((metric) => {
                                                                         return (
                                                                             <>
-                                                                                {metric != 'Model' ? <th>{metric}</th> : null}
+                                                                                {metric != 'classifier' ? <th>{metric}</th> : null}
                                                                             </>
                                                                         )
                                                                     }
@@ -350,11 +357,11 @@ function Train() {
                                                     <tbody>
                                                         {trainingResponse.all_models_results.map((model) => (
                                                             <tr>
-                                                                <td>{model.Model}</td>
+                                                                <td>{model.classifier}</td>
                                                                 <td>{model.AUC}</td>
                                                                 <td>{model.Accuracy}</td>
                                                                 <td>{model.F1}</td>
-                                                                <td>{model['Prec.']}</td>
+                                                                <td>{model.Precision}</td>
                                                                 <td>{model.Recall}</td>
                                                             </tr>
                                                         ))}
@@ -475,7 +482,7 @@ function Train() {
                                                 aria-labelledby="demo-controlled-radio-buttons-group"
                                                 // name="controlled-radio-buttons-group"
                                                 value={metricMode}
-                                                onChange={(event) => {setMetricMode(event.target.value); setMetricType('')}}
+                                                onChange={(event) => { setMetricMode(event.target.value); setMetricType('') }}
                                             >
                                                 <FormControlLabel
                                                     value="AutoSelect"
@@ -675,7 +682,7 @@ function Train() {
                                         {
                                             loading ?
                                                 <>
-                                                    {trainingStatus.status == 'Initialising' ? <LinearProgress /> : null}
+                                                    {trainingStatus.status.toLowerCase() != 'training' ? <LinearProgress /> : null}
                                                     {trainingStatus.status == 'Training' ? <LinearProgressWithLabel value={trainingStatus.progress} /> : null}
                                                     <Typography variant="body2" mt="1rem">
                                                         Please wait while the model is being trained...
@@ -685,7 +692,29 @@ function Train() {
                                         }
                                     </Col>
                                 </Row>
-                                {loading ?
+                                {
+                                    loading && trainingStatus.progress == 100 ?
+                                        <Row className="justify-content-center align-items-center">
+                                            <Col>
+                                                <Typography color='green' variant="h6">
+                                                    Training Completed
+                                                </Typography>
+                                            </Col>
+                                        </Row>
+                                        : null
+                                }
+                                {
+                                    loading && trainingStatus.status.toLowerCase() != 'training' ?
+                                        <Row className="justify-content-center align-items-center">
+                                            <Col>
+                                                <Typography variant="subtitle1">
+                                                    Current Status: {trainingStatus.status}
+                                                </Typography>
+                                            </Col>
+                                        </Row>
+                                        : null
+                                }
+                                {loading && trainingStatus.status.toLowerCase() == 'training' ?
                                     <Row className="justify-content-center align-items-center">
                                         <Col md="4">
                                             <MuiTable>

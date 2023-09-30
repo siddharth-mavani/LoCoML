@@ -32,29 +32,37 @@ def trainModel():
     process = subprocess.Popen(['python3', '-u', process_path, dataset_id, model_name, target_column, metric_mode, metric_type, objective, model_type], stderr=subprocess.PIPE, bufsize=1, text=True)
     
 
-
+    status = 'Loading'
     current_model = 'Initialising'
     progress_percent = 0
     estimated_time_left = 'Calculating'
+
     while True:
-        progress = process.stderr.readline()
-        print(progress)
+        output = process.stderr.readline()
+        print(output)
         if process.poll() is not None:
             break
 
-        if progress:
-            # print(progress)
-            if progress.find("Processing: ") != -1:
-                progress_percent = progress[progress.find("Processing: ")+12:15]
-                progress_percent = int(progress_percent.strip())
-            if progress.find("Current Model: ") != -1:
-                current_model = progress[progress.find("Current Model: ")+15:]
+        if output:
+            # print(output)
+            if output.find('Status: ') != -1:
+                status = output[output.find('Status: ')+8:output.find('Current Classifier: ')]
+                status = status.strip()
+                print(status)
+
+            if output.find("Current Classifier: ") != -1:
+                current_model = output[output.find("Current Classifier: ")+20:output.find("Processing: ")]
                 current_model = current_model.strip()
-                # print(progress_percent)
-            if progress.find("<") != -1:
-                idx = progress.find("<")
-                print("progress", progress)
-                time_left = progress[idx+1:idx+6]
+                print(current_model)
+
+            if output.find("Processing: ") != -1:
+                progress_percent = output[output.find("Processing: ")+12:output.find("Processing: ")+15]
+                progress_percent = int(progress_percent.strip())
+                print(progress_percent)
+
+            if output.find("<") != -1:
+                idx = output.find("<")
+                time_left = output[idx+1:idx+6]
                 if time_left[0] == '?':
                     estimated_time_left = 'Calculating'
                 else:
@@ -70,14 +78,6 @@ def trainModel():
                         estimated_time_left = str(int(time_left[:2])) + ' mins '
                     estimated_time_left += str(int(time_left[3:])) + ' secs'
                 print(estimated_time_left)
-            if progress.find("Saving Model") != -1:
-                sse.publish({
-                    'progress': 100,
-                    'model' : 'Completed Training',
-                    'status': 'Saving Model',
-                    'estimated_time_left': '0 secs'
-                })
-                continue
             
             if training_mode.lower() != 'automl':
                 current_model = model_type

@@ -1,5 +1,5 @@
-from pycaret.classification import ClassificationExperiment
-from pycaret.regression import RegressionExperiment
+from ClassificationUtility import ClassificationUtility
+from RegressionUtility import RegressionUtility
 import pandas as pd
 import datetime
 import pickle
@@ -9,32 +9,35 @@ import sys
 
 project_path = os.getenv('PROJECT_PATH')
 sys.path.append(project_path)
-
+sys.path.append('../Enums/')
+from Enums.enums import ClassificationMetrics, RegressionMetrics
 from mongo import db
 
-metric_type_map = {
-    'Accuracy' : 'Accuracy',
-    'AUC' : 'AUC',
-    'Precision' : 'Prec.',
-    'Recall' : 'Recall',
-    'F1' : 'F1',
-    'R2 Score' : 'R2',
-    'Mean Absolute Error' : 'MAE',
-    'Mean Squared Error' : 'MSE',
-    'Root Mean Squared Error' : 'RMSE',
-}
 
-metric_type_reverse_map = {
-    'Accuracy' : 'Accuracy',
-    'AUC' : 'AUC',
-    'Prec.' : 'Precision',
-    'Recall' : 'Recall',
-    'F1' : 'F1',
-    'R2' : 'R2 Score',
-    'MAE' : 'Mean Absolute Error',
-    'MSE' : 'Mean Squared Error',
-    'RMSE' : 'Root Mean Squared Error',
-}
+# metric_type_map = {
+#     'Accuracy' : 'Accuracy',
+#     'AUC' : 'AUC',
+#     'Precision' : 'Prec.',
+#     'Recall' : 'Recall',
+#     'F1' : 'F1',
+#     'R2 Score' : 'R2',
+#     'Mean Absolute Error' : 'MAE',
+#     'Mean Squared Error' : 'MSE',
+#     'Root Mean Squared Error' : 'RMSE',
+# }
+
+
+# metric_type_reverse_map = {
+#     'Accuracy' : 'Accuracy',
+#     'AUC' : 'AUC',
+#     'Prec.' : 'Precision',
+#     'Recall' : 'Recall',
+#     'F1' : 'F1',
+#     'R2' : 'R2 Score',
+#     'MAE' : 'Mean Absolute Error',
+#     'MSE' : 'Mean Squared Error',
+#     'RMSE' : 'Root Mean Squared Error',
+# }
 
 def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_type, objective):
     
@@ -42,10 +45,12 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
     dataset_path = os.getenv('PROJECT_PATH') + 'Datasets/'+dataset_id+'.csv'
     df = pd.read_csv(dataset_path)
 
+
+
     if objective.lower() == 'classification':
-        exp = ClassificationExperiment()
+        clf_util = ClassificationUtility(df, target_column)
     elif objective.lower() == 'regression':
-        exp = RegressionExperiment()
+        clf_util = RegressionUtility(df, target_column)
 
     if metric_mode.lower() == 'autoselect':
         if objective.lower() == 'classification':
@@ -54,41 +59,43 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
             is_balanced = class_dist.min() / class_dist.max() > 0.5
 
             if is_balanced:
-                metric_type = 'Accuracy'
+                metric_type = ClassificationMetrics.Accuracy.value
             else:
-                metric_type = 'AUC'
+                metric_type = ClassificationMetrics.AUC.value
             
         elif objective.lower() == 'regression':
-            metric_type = 'R2'
+            metric_type = RegressionMetrics.R2.value
 
-    df = df[df[target_column].notnull()]
+    # df = df[df[target_column].notnull()]
     
-    s = exp.setup(df, target=target_column , session_id = 123)
+    # s = exp.setup(df, target=target_column , session_id = 123)
 
-    models_list = []
-    if objective.lower() == 'classification':
-        models_list = ['lr', 'dt', 'rf', 'ada', 'nb', 'knn', 'svm']
-    elif objective.lower() == 'regression':
-        models_list = ['ridge', 'br']
+    # models_list = []
+    # if objective.lower() == 'classification':
+    #     models_list = ['lr', 'dt', 'rf', 'ada', 'nb', 'knn', 'svm']
+    # elif objective.lower() == 'regression':
+    #     models_list = ['ridge', 'br']
 
-    best = exp.compare_models(include = models_list, sort = metric_type_map[metric_type])
+    clf_util.trainAutoML()
+    results = clf_util.results
+    # best = exp.compare_models(include = models_list, sort = metric_type_map[metric_type])
 
-    results = exp.pull()
+    # results = exp.pull()
 
-    if objective.lower() == 'classification':
-        results.drop(['TT (Sec)','Kappa', 'MCC'], axis=1, inplace=True)
-    elif objective.lower() == 'regression':
-        results.drop(['TT (Sec)', 'RMSLE', 'MAPE'], axis=1, inplace=True)
+    # if objective.lower() == 'classification':
+    #     results.drop(['TT (Sec)','Kappa', 'MCC'], axis=1, inplace=True)
+    # elif objective.lower() == 'regression':
+    #     results.drop(['TT (Sec)', 'RMSLE', 'MAPE'], axis=1, inplace=True)
 
-    best_model_name = results['Model'][0]
-    model_parameters = best.get_params()
+    best_model_name = clf_util.getBestModel(metric_type)['classifier']
+    model_parameters = clf_util.trained_models[best_model_name]['classifier'].get_params()
 
     metrics = []
     for metric in results.columns:
-        if metric == 'Model':
+        if metric == 'Classifier':
             continue
         metrics.append({
-            'metric_name' : metric_type_reverse_map[metric],
+            'metric_name' : metric,
             'metric_value' : results.iloc[0][metric],
         })
 
@@ -101,15 +108,18 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
             'parameter_value' : value
         })
 
-    print("Saving Model", file=sys.stderr)
+    print("Status: Saving Model and Pipeline", file=sys.stderr)
     model_id = nanoid.generate(alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', size=6)
-    save_path = os.getenv('PROJECT_PATH') + 'Models/' + model_id
-    exp.save_model(best, save_path)
-    print("Transformation Pipeline and Model Successfully Saved", file=sys.stderr)
+    save_path = os.getenv('PROJECT_PATH') + 'Models/' + model_id + '.pkl'
+    clf_util.saveModel(best_model_name, save_path)
+    # print("Transformation Pipeline and Model Successfully Saved", file=sys.stderr)
+    
+    input_schema = clf_util.get_input_schema()
+    output_schema = clf_util.get_output_schema()
+    output_mapping = clf_util.get_output_mapping()
 
-    input_schema = exp.get_config('X_train').columns.to_list()
-    output_schema = [target_column]
-
+    print("Status: Saving Model Metadata in database", file=sys.stderr)
+    
     collection = db['Model_zoo']
 
     details = {
@@ -129,7 +139,10 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
         'all_models_results' : results.to_dict('records'),
         'input_schema' : input_schema,
         'output_schema' : output_schema,
+        'output_mapping' : output_mapping
     }
+
+    print(details)
 
     collection.insert_one(details)
     details.pop('_id')

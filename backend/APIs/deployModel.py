@@ -1,35 +1,41 @@
-from flask import Blueprint, jsonify, request
-from pandas.api.types import is_numeric_dtype
-import pandas as pd
-import numpy as np
+from flask import Flask, Blueprint, jsonify, request
 import os
-import subprocess
+import joblib
 import sys
 sys.path.append(os.getenv('PROJECT_PATH'))
 
 from mongo import db
-import re
+collection = db['Model_zoo']
+
 deployModel = Blueprint('deployModel', __name__)
+deployed_model_id = None
+deployed_model = None
 
 @deployModel.route('/deployModel', methods=['POST'])
 def deployModelAPI():
     data = request.get_json()
     model_id = data['model_id']
+    trained_model = collection.find_one({'model_id': model_id})
+    model_path = trained_model['saved_model_path']
+    model = joblib.load(model_path)
 
-    path = os.getenv('PROJECT_PATH') + 'functions/hostModel.py'
-    print(path)
-    command = f"gnome-terminal -- python3 {path}"
-    # process = subprocess.Popen(['python3', '-u', path], stdout=subprocess.PIPE, text=True)
+    global deployed_model_id
+    global deployed_model
 
-    
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    while True:
-        output = process.stdout.readline()
-        # output = output.decode('utf-8')
-        print(output)
-        re_out = re.search('Running on http://', output)
-        if re_out:
-            break
+    deployed_model_id = model_id
+    deployed_model = model
+    return {'status': 'success', 'message': 'Model deployed successfully', 'endpoint' : 'http://localhost:5000/{model_id}/predict'.format(model_id=model_id)}
 
-    print('Model Deployeddd!')
-    return {'status': 'success', 'message': 'Model deployed successfully'}
+import pandas as pd
+@deployModel.route('/<model_id>/predict', methods=['POST'])
+def predict(model_id):
+    global deployed_model_id
+    global deployed_model
+    if model_id == deployed_model_id:
+        data = request.get_json()
+        data = data['data']
+        data = pd.DataFrame(data)
+        predictions = deployed_model.predict(data)
+        return {'predictions': predictions}
+    else:
+        return {'status': 'error', 'message': 'Model not deployed'}
