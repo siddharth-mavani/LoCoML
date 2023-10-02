@@ -13,13 +13,24 @@ import { CircularProgress, Typography } from "@mui/material";
 function TrainedModels() {
     const [loading, setLoading] = React.useState(true);
     const [trainedModels, setTrainedModels] = React.useState([]);
-
+    const [datasets, setDatasets] = React.useState({});
     React.useEffect(() => {
         // wait for 3 seconds
         const timer = setTimeout(() => {
             setLoading(false);
         }, 1000);
 
+        axios.get("http://localhost:5000/getDatasets")
+            .then((response) => {
+                console.log(response.data);
+                var dataset_map = {}
+                for (var i = 0; i < response.data.dataset_list.length; i++) {
+                    dataset_map[response.data.dataset_list[i].dataset_id] = response.data.dataset_list[i].dataset_name;
+                }
+                setDatasets(dataset_map);
+            }).catch((error) => {
+                console.log(error);
+            })
 
         axios.get("http://localhost:5000/getTrainedModels")
             .then(async (response) => {
@@ -36,6 +47,7 @@ function TrainedModels() {
             .catch((error) => {
                 console.log(error);
             })
+
 
         return () => clearTimeout(timer);
     }, []);
@@ -97,11 +109,11 @@ function TrainedModels() {
                             <TableCell>Date</TableCell>
                             <TableCell>Time</TableCell>
                             <TableCell>Dataset</TableCell>
+                            <TableCell>Model ID</TableCell>
                             <TableCell>Model Name</TableCell>
                             <TableCell>Training Type</TableCell>
                             <TableCell>Model Type</TableCell>
                             <TableCell>Objective</TableCell>
-                            <TableCell>Target Column</TableCell>
                             <TableCell>Metric</TableCell>
                             <TableCell>Value</TableCell>
                             <TableCell>Download</TableCell>
@@ -113,23 +125,24 @@ function TrainedModels() {
                                 <TableRow key={index}>
                                     <TableCell>{getDateFromTimestamp(model.time)}</TableCell>
                                     <TableCell>{getTimeIn12Hours(model.time)}</TableCell>
-                                    <TableCell>{model.dataset_name}</TableCell>
+                                    <TableCell>{datasets[model.dataset_id]} (id: {model.dataset_id} )</TableCell>
+                                    <TableCell>{model.model_id}</TableCell>
                                     <TableCell
                                         style={{
                                             cursor: 'pointer'
                                         }}
-                                        onClick={() => window.location.href = `/models/${model.model_name}`}
+                                        onClick={() => window.location.href = `/models/${model.model_id}`}
                                     >
+
                                         <Typography variant="body1" style={{ color: '#007bff' }}>
                                             {model.model_name}
                                         </Typography>
                                     </TableCell>
-                                    <TableCell>{model.model_type}</TableCell>
-                                    <TableCell>{model.best_model_name}</TableCell>
+                                    <TableCell>{model.training_mode}</TableCell>
+                                    <TableCell>{model.estimator_type}</TableCell>
                                     <TableCell>{model.objective.charAt(0).toUpperCase() + model.objective.slice(1)}</TableCell>
-                                    <TableCell>{model.target_column}</TableCell>
                                     <TableCell>{model.metric_type}</TableCell>
-                                    <TableCell>{getMetricValue(model.metrics, model.metric_type)}</TableCell>
+                                    <TableCell>{getMetricValue(model.evaluation_metrics, model.metric_type)}</TableCell>
                                     <TableCell><IconButton
                                         size="small"
                                         color="primary"

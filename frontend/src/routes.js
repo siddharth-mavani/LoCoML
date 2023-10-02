@@ -25,6 +25,7 @@ import Train from "views/train";
 import TrainedModels from "views/TrainedModels";
 import ModelDetails from "views/ModelDetails";
 import Inference from "views/Inference";
+import Delete from "views/Delete";
 
 var routes = [
   {
@@ -81,6 +82,12 @@ var routes = [
     name: "Inference",
     showInSidebar: true,
     component: <Inference />,
+  },
+  { 
+    path: "/delete",
+    name: "Delete",
+    showInSidebar: false,
+    component: <Delete />,
   }
 ];
 export default routes;
