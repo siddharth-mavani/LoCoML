@@ -18,8 +18,7 @@ function ModelDetails() {
         const timer = setTimeout(() => {
             setLoading(false);
         }, 1000);
-
-        axios.get(`http://localhost:5000/getTrainedModels/${modelName}`)
+        axios.get(process.env.REACT_APP_GET_TRAINED_MODELS_URL + modelName)
             .then(async (response) => {
                 setModelDetails(response.data);
                 console.log(response.data);

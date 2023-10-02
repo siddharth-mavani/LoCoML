@@ -1,4 +1,5 @@
 from flask import Blueprint, send_file
+from mongo import db
 
 import os
 getDatasets = Blueprint('getDatasets', __name__)
@@ -20,3 +21,9 @@ def getDatasetFile(dataset_name):
     dataset_path = './processedDatasets/'+dataset_name
     # dataset_file = open(dataset_path + '/' + dataset_name)
     return send_file(dataset_path)
+
+@getDatasets.route('/getDatasets/columns/<model_name>')
+def getDatasetColumns(model_name):
+    collection = db['Models_Trained']
+    data = collection.find_one({'model_name': model_name})
+    return {'target_column': data['target_column'], 'non_target_columns': data['non_target_columns']}

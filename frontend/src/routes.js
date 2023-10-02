@@ -24,6 +24,7 @@ import EDA from "views/EDA";
 import Train from "views/train";
 import TrainedModels from "views/TrainedModels";
 import ModelDetails from "views/ModelDetails";
+import Inference from "views/Inference";
 
 var routes = [
   {
@@ -74,6 +75,12 @@ var routes = [
     name: "Model Details",
     showInSidebar: false,
     component: <ModelDetails />,
+  },
+  {
+    path: "/inference",
+    name: "Inference",
+    showInSidebar: true,
+    component: <Inference />,
   }
 ];
 export default routes;
