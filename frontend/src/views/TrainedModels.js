@@ -17,7 +17,7 @@ function TrainedModels() {
     React.useEffect(() => {
         // wait for 3 seconds
         const timer = setTimeout(() => {
-            setLoading(false);
+            
         }, 1000);
 
         axios.get("http://localhost:5000/getDatasets")
@@ -41,6 +41,7 @@ function TrainedModels() {
                     temp.push(parsed_model);
                 }
                 setTrainedModels(temp);
+                setLoading(false)
                 // console.log(temp);
                 // setLoading(false);
             })

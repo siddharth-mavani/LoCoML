@@ -1429,7 +1429,9 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif; }
+  /* font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;  */
+  font-family: 'Poppins', sans-serif;
+}
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 400; }
@@ -1560,7 +1562,8 @@ a.text-gray:focus, a.text-gray:hover {
 body {
   color: #2c2c2c;
   font-size: 14px;
-  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  /* font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif; */
+  font-family: 'Poppins', sans-serif;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased; }
 
@@ -3298,7 +3301,9 @@ License - nucleoapp.com/license/
       margin: 10px 10px;
       color: #FFFFFF;
       line-height: 20px;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+      /* font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;  */
+      font-family: 'Poppins', sans-serif;
+    }
     .sidebar .logo .simple-text,
     .off-canvas-sidebar .logo .simple-text {
       text-transform: uppercase;
