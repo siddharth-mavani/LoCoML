@@ -8,11 +8,12 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { IconButton } from "@mui/material";
 import { CircularProgress, Typography } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
 
 function Inference() {
+    const [csvFile, setCsvFile] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
     const [predMode, setModeType] = React.useState(""); 
     const [targetColumn, setTargetColumn] = React.useState("");
@@ -25,6 +26,7 @@ function Inference() {
     const [userInputValues, setUserInputValues] = React.useState({});
     const [selectedDatasetColumns, setSelectedDatasetColumns] = React.useState([]);
 
+    const navigate = useNavigate();
 
     React.useEffect(() => {
         // wait for 3 seconds
@@ -73,7 +75,7 @@ function Inference() {
         setModeType("single");
 
         console.log(model.input_schema);
-        setSelectedDatasetColumns(model.input_schema)
+        setSelectedDatasetColumns(model.input_schema);
     }
 
     function handleSelectBatch(model) {
@@ -82,14 +84,7 @@ function Inference() {
 
         setModeType("batch");
 
-        axios.get(process.env.REACT_APP_GET_DATASET_COLUMNS_URL + '/' + model.model_name)
-            .then((response) => {
-                console.log(response.data.columns);
-                setSelectedDatasetColumns(response.data.non_target_columns);
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+        setSelectedDatasetColumns(model.input_schema)
     }
 
     function handleInputChange(column, value) {
@@ -97,6 +92,55 @@ function Inference() {
             ...userInputValues,
             [column]: value
         });
+    }
+
+    function handleFileUpload(e) {
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('model', JSON.stringify(selectedModel));
+
+        axios.post(process.env.REACT_APP_INFERENCE_BATCH, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            data: { model: selectedModel }
+        })
+        .then((response) => {
+            console.log(response.data);
+            const csvFile = new Blob([response.data], { type: 'text/csv' });
+            setCsvFile(csvFile);
+            setInferenceReceived(true);
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
+
+    function handleDownloadBatch() {
+        if (csvFile) {
+            // Create a URL for the Blob
+            const url = window.URL.createObjectURL(csvFile);
+    
+            // Create a link element
+            const link = document.createElement('a');
+    
+            // Set the href and download attributes of the link
+            link.href = url;
+            link.setAttribute('download', 'predictions.csv');
+    
+            // Append the link to the body
+            document.body.appendChild(link);
+    
+            // Click the link to start the download
+            link.click();
+    
+            // Remove the link from the body
+            document.body.removeChild(link);
+        }
+
+        navigate("/models");
+
     }
 
     function handleInference() {
@@ -232,7 +276,42 @@ function Inference() {
                     )}
 
                 </> : <>
-                    batch
+                <Typography variant="h4" style={{ marginBottom: '20px' }}>
+                        Batch Inference
+                    </Typography>
+
+                    <Typography variant="subtitle1" style={{ marginBottom: '10px' }}>
+                        Upload a CSV file containing the following columns:
+                    </Typography>
+                    <ul>
+                        {selectedDatasetColumns.map((column) => (
+                            <li key={column.column_name}>
+                                <Typography variant="body1">
+                                    {column.column_name}
+                                </Typography>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileUpload}
+                    />
+                    
+                    {inferenceReceived && csvFile ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px' }}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                startIcon={<FileDownloadIcon />}
+                                style={{ marginTop: '10px' }}
+                                onClick={handleDownloadBatch}
+                            >
+                                Download Prediction File
+                            </Button>
+                        </div>
+                    ) : ( <></> )}
                 </>
             }
         </div>
