@@ -20,7 +20,7 @@ function TrainedModels() {
             
         }, 1000);
 
-        axios.get("http://localhost:5000/getDatasets")
+        axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
             .then((response) => {
                 console.log(response.data);
                 var dataset_map = {}
@@ -32,13 +32,17 @@ function TrainedModels() {
                 console.log(error);
             })
 
-        axios.get("http://localhost:5000/getTrainedModels")
+            axios.get("http://localhost:5000/getTrainedModels")
             .then(async (response) => {
                 console.log(response.data);
                 var temp = [];
                 for (var i = 0; i < response.data.trained_models.length; i++) {
-                    var parsed_model = await JSON.parse(response.data.trained_models[i]);
-                    temp.push(parsed_model);
+                    try {
+                        var parsed_model = JSON.parse(response.data.trained_models[i]);
+                        temp.push(parsed_model);
+                    } catch (error) {
+                        console.error(`Invalid JSON in response.data.trained_models[${i}]:`, response.data.trained_models[i]);
+                    }
                 }
                 setTrainedModels(temp);
                 setLoading(false)
@@ -48,6 +52,7 @@ function TrainedModels() {
             .catch((error) => {
                 console.log(error);
             })
+        
 
 
         return () => clearTimeout(timer);

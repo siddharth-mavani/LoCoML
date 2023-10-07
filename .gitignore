@@ -12,6 +12,8 @@ package-lock.json
 
 /paper-dashboard-react-main
 
+/backend/Models
+
 # misc
 .DS_Store
 .env.local

@@ -2,6 +2,7 @@ import { Typography, Button, CircularProgress, Table, TableHead, TableRow, Table
 import axios from "axios";
 import React, { useEffect } from "react";
 import { Col, Row, Button as ReactStrapButton } from "reactstrap";
+import { Table as ReactStrapTable } from "reactstrap";
 import ModelInfoComponent from "components/ModelInfo/ModelInfoComponent";
 
 
