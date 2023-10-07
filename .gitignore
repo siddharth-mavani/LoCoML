@@ -13,6 +13,8 @@ package-lock.json
 /paper-dashboard-react-main
 
 /backend/Models
+/backend/APIs/__pycache__
+/backend/__pycache__
 
 # misc
 .DS_Store
