@@ -7,6 +7,12 @@ import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Paper from '@mui/material/Paper';
+import ConfusionMatrix from "components/Charts/Classification/ConfusionMatrix";
+import FeatureImportance from "components/Charts/Classification/FeatureImportance";
+import PrecisionRecall from "components/Charts/Classification/PrecisionRecall";
+import RocCurve from "components/Charts/Classification/RocCurve";
+import ScatterPlot from "components/Charts/Regression/ScatterPlot";
+import ResidualPlot from "components/Charts/Regression/ResidualPlot";
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -44,6 +50,7 @@ function a11yProps(index) {
 function ModelInfoComponent(props) {
 
     const modelDetails = props.modelDetails;
+    console.log(modelDetails)
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event, newValue) => {
@@ -108,7 +115,7 @@ function ModelInfoComponent(props) {
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                             <Tab label="Metrics" {...a11yProps(0)} />
-                            <Tab label="Graphs" {...a11yProps(1)} />
+                            <Tab label="Visualizations" {...a11yProps(1)} />
                             <Tab label="Parameters" {...a11yProps(2)} />
                             <Tab label="All Models Results" {...a11yProps(3)} />
                         </Tabs>
@@ -161,7 +168,53 @@ function ModelInfoComponent(props) {
                         </ReactStrapTable>
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={1}>
-                        Graphs
+                        {
+                            modelDetails.objective.toLowerCase() == 'classification' ?
+                                <>
+                                    <Row
+
+                                    >
+                                        <Col md="6">
+                                            <ConfusionMatrix cm={modelDetails.graph_data.confusion_matrix} output_mapping={modelDetails.output_mapping} />
+                                        </Col>
+                                        <Col md="6">
+                                            <FeatureImportance fi={modelDetails.graph_data.feature_importance} />
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col md="6">
+                                            <PrecisionRecall pr_data={modelDetails.graph_data.precision_recall_data} />
+                                        </Col>
+
+                                        <Col md="6">
+                                            <RocCurve auc_data={modelDetails.graph_data.auc_data} />
+                                        </Col>
+                                    </Row>
+                                </>
+                                :
+                                <>
+                                    <Row
+                                        style={{
+                                            marginBottom: '1.5rem'
+                                        }}
+                                    >
+                                        <Col md="6">
+                                            <FeatureImportance fi={modelDetails.graph_data.feature_importance} />
+                                        </Col>
+                                        <Col md="6">
+                                            <ScatterPlot scatter_plot_data={modelDetails.graph_data.scatter_plot_data} />
+                                        </Col>
+                                    </Row>
+                                    <Row
+                                    justify-content="center"
+                                    >
+                                        <Col>
+                                            <ResidualPlot residual_plot_data={modelDetails.graph_data.residual_plot_data} />
+                                        </Col>
+                                    </Row>
+                                </>
+                        }
+
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={3}>
                         <ReactStrapTable striped>

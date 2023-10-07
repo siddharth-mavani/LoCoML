@@ -21,18 +21,18 @@ function ModelDetails() {
         const timer = setTimeout(() => {
             setLoading(false);
         }, 1000);
-        setModelDetails(JSON.parse(localStorage.getItem("modelDetails")));
-        // axios.get(process.env.REACT_APP_GET_TRAINED_MODELS_URL + '/' + model_id)
-        //     .then(async (response) => {
-        //         if(response.data) {
-        //             localStorage.setItem("modelDetails", JSON.stringify(response.data))
-        //         }
-
-        //         console.log(response.data);
-        //     })
-        //     .catch((error) => {
-        //         console.log(error);
-        //     })
+        // setModelDetails(JSON.parse(localStorage.getItem("modelDetails")));
+        axios.get(process.env.REACT_APP_GET_TRAINED_MODELS_URL + '/' + model_id)
+            .then(async (response) => {
+                if(response.data) {
+                    localStorage.setItem("modelDetails", JSON.stringify(response.data))
+                }
+                setModelDetails(response.data);
+                console.log(response.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            })
 
         return () => clearTimeout(timer);
     }, []);
@@ -64,7 +64,9 @@ function ModelDetails() {
                     </Typography>
                 </div> :
                 <div>
-                    <ModelInfoComponent modelDetails={modelDetails} />
+                    {
+                        Object.keys(modelDetails).length > 0 && <ModelInfoComponent modelDetails={modelDetails} />
+                    }
                 </div>
 
             }

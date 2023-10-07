@@ -7,7 +7,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn.linear_model import Ridge, BayesianRidge
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from sklearn.inspection import permutation_importance
 from tqdm import tqdm
+from statsmodels.stats.outliers_influence import OLSInfluence
 import pandas as pd
 import joblib
 import os
@@ -15,16 +17,23 @@ import sys
 project_path = os.getenv('PROJECT_PATH')
 sys.path.append(project_path)
 sys.path.append('../Enums/')
-from Enums.enums import RegressionMetrics
+# from Enums.enums import RegressionMetrics
+from enum import Enum
+class RegressionMetrics(Enum):
+    R2 = "R2 Score"
+    MAE = "Mean Absolute Error"
+    MSE = "Mean Squared Error"
+    RMSE = "Root Mean Squared Error"
 
 import warnings
 warnings.filterwarnings("ignore")
 
 class RegressionUtility():
-    def __init__(self, data, target_column):
+    def __init__(self, data, target_column, metric_type=RegressionMetrics.R2.value):
         self.data = data
         self.target_column = target_column
         self.cardinality_threshold = 10
+        self.metric_type = metric_type
         self.classifiers = [
             Ridge(alpha=0.5),
             BayesianRidge(),
@@ -68,11 +77,21 @@ class RegressionUtility():
                 one_hot_encoding_columns.append(column)
         self.one_hot_encoding_columns = one_hot_encoding_columns
 
+    def split_data(self):
+        X = self.data.drop(self.target_column, axis=1)
+        y = self.data[self.target_column]
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
     def prepare_data(self):
         self.get_numerical_columns()
         self.get_categorical_columns()
         self.get_categorical_column_cardinality()
         self.get_target_encoding_columns()
+        self.split_data()
         self.get_one_hot_encoding_columns()
 
     def get_preprocessor(self):
@@ -105,7 +124,7 @@ class RegressionUtility():
 
         estimator = Pipeline(steps=[
             ('preprocessor', self.preprocessor),
-            ('classifier', estimator)
+            ('regressor', estimator)
         ])
         self.estimator = estimator
     
@@ -120,24 +139,22 @@ class RegressionUtility():
         pbar = tqdm(self.classifiers)
         for classifier in pbar:
             self.get_estimator(classifier)
-            X = self.data.drop(self.target_column, axis=1)
-            y = self.data[self.target_column]
             
             pbar.set_description("Status: %s Current Classifier: %s Processing" % ('Training', classifier.__class__.__name__))
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-            self.estimator.fit(X_train, y_train)
+
+            self.estimator.fit(self.X_train, self.y_train)
             trained_models[classifier.__class__.__name__] = self.estimator
 
-            y_pred = self.estimator.predict(X_test)
+            y_pred = self.estimator.predict(self.X_test)
             # print(y_pred)
 
-            r2 = r2_score(y_test, y_pred)
-            mse = mean_squared_error(y_test, y_pred)
-            mae = mean_absolute_error(y_test, y_pred)
-            rmse = mean_squared_error(y_test, y_pred, squared=False)
+            r2 = r2_score(self.y_test, y_pred)
+            mse = mean_squared_error(self.y_test, y_pred)
+            mae = mean_absolute_error(self.y_test, y_pred)
+            rmse = mean_squared_error(self.y_test, y_pred, squared=False)
 
             results.append({
-                'Classifier' : classifier.__class__.__name__,
+                'regressor' : classifier.__class__.__name__,
                 RegressionMetrics.R2.value : round(r2, 2),
                 RegressionMetrics.MSE.value : round(mse, 2),
                 RegressionMetrics.MAE.value : round(mae, 2),
@@ -146,10 +163,12 @@ class RegressionUtility():
         
         self.trained_models = trained_models
         self.results = pd.DataFrame(results)
+        self.getBestModel(self.metric_type)
 
     def getBestModel(self, metric):
         self.results.sort_values(by=metric, ascending=False, inplace=True)
         self.best_model = self.results.iloc[0]
+        self.best_estimator = self.trained_models[self.best_model['regressor']]
         return self.best_model
     
     def saveModel(self, model_name, save_path):
@@ -177,3 +196,28 @@ class RegressionUtility():
     def get_output_mapping(self):
         self.output_mapping = {}
         return self.output_mapping
+
+    def get_feature_importance(self):
+        feature_importance = {}
+        feature_importance['feature_names'] = self.X_train.columns.tolist()
+        feature_importance['feature_importance'] = permutation_importance(self.best_estimator, self.X_test, self.y_test, n_repeats=3, random_state=42)['importances_mean'].tolist()
+        return feature_importance
+    
+    def get_scatter_plot_data(self):
+        scatter_plot_data = {}
+        scatter_plot_data['y_true'] = self.y_test.tolist()
+        scatter_plot_data['y_pred'] = self.best_estimator.predict(self.X_test).tolist()
+        return scatter_plot_data
+
+    def get_residual_plot_data(self):
+        residual_plot_data = {}
+        residual_plot_data['y_pred'] = self.best_estimator.predict(self.X_test).tolist()
+        residual_plot_data['residuals'] = (self.best_estimator.predict(self.X_test) - self.y_test).tolist()
+        return residual_plot_data
+    
+    # def get_cooks_distance_data(self):
+    #     regressor = self.best_estimator.named_steps['regressor']
+    #     cooks_distance_data = {}
+    #     cooks_distance_data['x'] = list(range(len(self.X_test)))
+    #     cooks_distance_data['y'] = OLSInfluence(regressor).cooks_distance[0].tolist()
+    #     return cooks_distance_data

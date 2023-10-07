@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, request
 import sys 
 sys.path.append('../')
 
@@ -19,6 +19,9 @@ def getTrainedModelList():
 
 @getTrainedModels.route('/getTrainedModels/<model_id>', methods=['GET'])
 def getTrainedModel(model_id):
+    # get model_id from endpoint
+    # model_id = request.view_args['model_id']
+    print(model_id)
     collection = db['Model_zoo']
     trained_model = collection.find_one({'model_id': model_id})
     return json_util.dumps(trained_model)

@@ -85,7 +85,7 @@ def trainModel():
             sse.publish({
                 'progress': progress_percent,
                 'model': current_model,
-                'status': 'Training',
+                'status': status,
                 'estimated_time_left': estimated_time_left
             }, channel='mychannel')
 

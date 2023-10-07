@@ -199,7 +199,7 @@ function Train() {
                         </Box>
                         {activeStep === steps.length ? (
                             <>
-                                <ModelInfoComponent modelDetails={trainingResponse} />
+                               { Object.keys(trainingResponse).length > 0 && <ModelInfoComponent modelDetails={trainingResponse} /> }
                             </>
                         ) : (
                             <React.Fragment>
@@ -278,7 +278,7 @@ function Train() {
                                                     loading ?
                                                         <>
                                                             {trainingStatus.status.toLowerCase() != 'training' ? <LinearProgress /> : null}
-                                                            {trainingStatus.status == 'Training' ? <LinearProgressWithLabel value={trainingStatus.progress} /> : null}
+                                                            {trainingStatus.status == 'Training' && trainingStatus.progress < 100 ? <LinearProgressWithLabel value={trainingStatus.progress} /> : null}
                                                             <Typography variant="body2" mt="1rem">
                                                                 Please wait while the model is being trained...
                                                             </Typography>

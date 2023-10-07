@@ -45,13 +45,6 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
     dataset_path = os.getenv('PROJECT_PATH') + 'Datasets/'+dataset_id+'.csv'
     df = pd.read_csv(dataset_path)
 
-
-
-    if objective.lower() == 'classification':
-        clf_util = ClassificationUtility(df, target_column)
-    elif objective.lower() == 'regression':
-        clf_util = RegressionUtility(df, target_column)
-
     if metric_mode.lower() == 'autoselect':
         if objective.lower() == 'classification':
 
@@ -65,6 +58,14 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
             
         elif objective.lower() == 'regression':
             metric_type = RegressionMetrics.R2.value
+
+
+    if objective.lower() == 'classification':
+        clf_util = ClassificationUtility(df, target_column, metric_type)
+    elif objective.lower() == 'regression':
+        clf_util = RegressionUtility(df, target_column, metric_type)
+
+    
 
     # df = df[df[target_column].notnull()]
     
@@ -87,12 +88,16 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
     # elif objective.lower() == 'regression':
     #     results.drop(['TT (Sec)', 'RMSLE', 'MAPE'], axis=1, inplace=True)
 
-    best_model_name = clf_util.getBestModel(metric_type)['classifier']
-    model_parameters = clf_util.trained_models[best_model_name]['classifier'].get_params()
-
+    if objective.lower() == 'classification':
+        best_model_name = clf_util.getBestModel(metric_type)['classifier']
+        model_parameters = clf_util.trained_models[best_model_name]['classifier'].get_params()
+    else:
+        best_model_name = clf_util.getBestModel(metric_type)['regressor']
+        model_parameters = clf_util.trained_models[best_model_name]['regressor'].get_params()
+    
     metrics = []
     for metric in results.columns:
-        if metric == 'Classifier':
+        if metric == 'Classifier' or metric.lower() == 'regressor':
             continue
         metrics.append({
             'metric_name' : metric,
@@ -118,6 +123,29 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
     output_schema = clf_util.get_output_schema()
     output_mapping = clf_util.get_output_mapping()
 
+    graph_data = {}
+    if objective.lower() == 'classification':
+        cm = clf_util.get_confusion_matrix()
+        feature_importance = clf_util.get_feature_importance()
+        pr_data = clf_util.get_precision_recall_data()
+        auc_data = clf_util.get_auc_data()
+        graph_data = {
+            'confusion_matrix' : cm,
+            'feature_importance' : feature_importance,
+            'precision_recall_data' : pr_data,
+            'auc_data' : auc_data
+        }
+    else:
+        feature_importance = clf_util.get_feature_importance()
+        scatter_plot_data = clf_util.get_scatter_plot_data()
+        residual_plot_data = clf_util.get_residual_plot_data()
+        graph_data = {
+            'feature_importance' : feature_importance,
+            'scatter_plot_data' : scatter_plot_data,
+            'residual_plot_data' : residual_plot_data
+        }
+
+
     print("Status: Saving Model Metadata in database", file=sys.stderr)
     
     collection = db['Model_zoo']
@@ -139,10 +167,11 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
         'all_models_results' : results.to_dict('records'),
         'input_schema' : input_schema,
         'output_schema' : output_schema,
-        'output_mapping' : output_mapping
+        'output_mapping' : output_mapping,
+        'graph_data' : graph_data
     }
 
-    print(details)
+    # print(details)
 
     collection.insert_one(details)
     details.pop('_id')
