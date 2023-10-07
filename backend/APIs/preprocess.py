@@ -6,8 +6,8 @@ preprocess = Blueprint('preprocess', __name__)
 
 @preprocess.route('/preprocess', methods=['POST'])
 def preprocessDataset():
-    dataset_name = request.json['name']
-    dataset_path = './Datasets/'+dataset_name
+    dataset_id = request.json['dataset_id']
+    dataset_path = './Datasets/'+dataset_id+'.csv'
     
     # Access finalTasks from request data
     finalTasks = request.json['tasks']
@@ -41,10 +41,10 @@ def preprocessDataset():
     if "Normalise Features" in finalTasks:
         for column in df.columns:
             if (is_numeric_dtype(df[column]) and df[column].dtype != 'bool'):
-                df[column] = (df[column] - df[column].min()) / (df[column].max() - df[column].min())
+                df[column] = (df[column] - df[column].mean()) / df[column].std()
                 normalized_columns.append(column)
 
-    processed_dataset_path = './processedDatasets/' + dataset_name
+    processed_dataset_path = './processedDatasets/' + dataset_id + '.csv'
     df.to_csv(processed_dataset_path, index=False)
     
     return jsonify({'message': 'Preprocessing completed successfully', 

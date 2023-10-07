@@ -7,6 +7,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Col, Row, Button as ReactStrapButton } from "reactstrap";
 import { Table as ReactStrapTable } from "reactstrap";
+
+
 function ModelDetails() {
     // console.log("ModelDetails");
     const model_id = window.location.pathname.split("/")[2];
@@ -18,7 +20,7 @@ function ModelDetails() {
         const timer = setTimeout(() => {
             setLoading(false);
         }, 1000);
-        axios.get(process.env.REACT_APP_GET_TRAINED_MODELS_URL + modelName)
+        axios.get(process.env.REACT_APP_GET_TRAINED_MODELS_URL + model_id)
             .then(async (response) => {
                 setModelDetails(response.data);
                 console.log(response.data);

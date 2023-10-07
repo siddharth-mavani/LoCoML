@@ -9,6 +9,7 @@ from APIs.preprocess import preprocess
 from APIs.getTrainedModels import getTrainedModels
 from APIs.storeDataset import storeDataset
 from APIs.deployModel import deployModel
+from APIs.inference import inference_blueprint
 
 app = Flask(__name__)
 CORS(app)
@@ -21,6 +22,7 @@ app.register_blueprint(preprocess)
 app.register_blueprint(getTrainedModels)
 app.register_blueprint(storeDataset)
 app.register_blueprint(deployModel)
+app.register_blueprint(inference_blueprint)
 
 
 app.config['REDIS_URL'] = os.getenv('REDIS_URL')

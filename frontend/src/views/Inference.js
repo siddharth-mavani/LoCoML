@@ -20,6 +20,7 @@ function Inference() {
     const [singlePrediction, setSinglePrediction] = React.useState("");
     const [inferenceReceived, setInferenceReceived] = React.useState(false);
 
+    const [datasets, setDatasets] = React.useState({});
     const [trainedModels, setTrainedModels] = React.useState([]);
     const [userInputValues, setUserInputValues] = React.useState({});
     const [selectedDatasetColumns, setSelectedDatasetColumns] = React.useState([]);
@@ -31,14 +32,30 @@ function Inference() {
             setLoading(false);
         }, 1000);
 
+        axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
+            .then((response) => {
+                console.log(response.data);
+                var dataset_map = {}
+                for (var i = 0; i < response.data.dataset_list.length; i++) {
+                    dataset_map[response.data.dataset_list[i].dataset_id] = response.data.dataset_list[i].dataset_name;
+                }
+                setDatasets(dataset_map);
+            }).catch((error) => {
+                console.log(error);
+            })
+
 
         axios.get(process.env.REACT_APP_GET_TRAINED_MODELS_URL)
             .then(async (response) => {
                 console.log(response.data);
                 var temp = [];
                 for (var i = 0; i < response.data.trained_models.length; i++) {
-                    var parsed_model = await JSON.parse(response.data.trained_models[i]);
-                    temp.push(parsed_model);
+                    try {
+                        var parsed_model = JSON.parse(response.data.trained_models[i]);
+                        temp.push(parsed_model);
+                    } catch (error) {
+                        console.error(`Invalid JSON in response.data.trained_models[${i}]:`, response.data.trained_models[i]);
+                    }
                 }
                 setTrainedModels(temp);
             })
@@ -55,14 +72,8 @@ function Inference() {
 
         setModeType("single");
 
-        axios.get(process.env.REACT_APP_GET_DATASET_COLUMNS_URL + '/' + model.model_name)
-            .then((response) => {
-                console.log(response.data.columns);
-                setSelectedDatasetColumns(response.data.non_target_columns);
-            })
-            .catch((error) => {
-                console.log(error);
-            })
+        console.log(model.input_schema);
+        setSelectedDatasetColumns(model.input_schema)
     }
 
     function handleSelectBatch(model) {
@@ -91,20 +102,20 @@ function Inference() {
     function handleInference() {
         console.log(userInputValues);
 
+        let columns = [];
         // Check for empty values
         for (var i = 0; i < selectedDatasetColumns.length; i++) {
-            if (userInputValues[selectedDatasetColumns[i]] === undefined) {
+            if (userInputValues[selectedDatasetColumns[i].column_name] === undefined) {
                 alert("Please fill in all the values");
-                setUserInputValues({});
                 return;
             }
+            columns.push(selectedDatasetColumns[i].column_name);
         }
 
         axios.post(process.env.REACT_APP_INFERENCE_SINGLE, {
-            model_name: selectedModel.model_name,
-            target_column: selectedModel.target_column,
-            non_target_columns: selectedDatasetColumns,
-            user_input_values: userInputValues
+            non_target_columns: columns,
+            user_input_values: userInputValues,
+            model: selectedModel
             })
             .then((response) => {
                 console.log(response.data);
@@ -148,7 +159,7 @@ function Inference() {
                             {trainedModels.map((model, index) => {
                                 return (
                                     <TableRow key={index}>
-                                        <TableCell className="text-center">{model.dataset_name}</TableCell>
+                                        <TableCell className="text-center">{datasets[model.dataset_id]} (id: {model.dataset_id} )</TableCell>
                                         <TableCell className="text-center"
                                             style={{
                                                 cursor: 'pointer'
@@ -159,7 +170,7 @@ function Inference() {
                                                 {model.model_name}
                                             </Typography>
                                         </TableCell>
-                                        <TableCell className="text-center">{model.best_model_name}</TableCell>
+                                        <TableCell className="text-center">{model.estimator_type}</TableCell>
                                         <TableCell className="text-center">{model.target_column}</TableCell>
                                         <TableCell className="text-center">
                                             <Button color="secondary" onClick={() => handleSelectSingle(model)}>Single Case</Button>
@@ -183,12 +194,13 @@ function Inference() {
                                 {selectedDatasetColumns.map((column, index) => {
                                     return (
                                         <TableRow key={index}>
-                                            <TableCell className="text-center">{column}</TableCell>
+                                            <TableCell className="text-center">{column.column_name}</TableCell>
                                             <TableCell className="text-center">
                                                     <input
-                                                        placeholder={`Enter value for ${column}`}
-                                                        value={userInputValues[column] || ''}
-                                                        onChange={(e) => handleInputChange(column, e.target.value)}
+                                                        type={column.column_type === 'int64' ? 'number' : 'text'}
+                                                        placeholder={`Enter value for ${column.column_name}`}
+                                                        value={userInputValues[column.column_name] || ''}
+                                                        onChange={(e) => handleInputChange(column.column_name, e.target.value)}
                                                     />
                                             </TableCell>
                                         </TableRow>
@@ -197,8 +209,6 @@ function Inference() {
                             </TableBody>
                         </Table>
                     </TableContainer>
-
-
                     {inferenceReceived ? (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '10px' }}>
                             <Typography variant="h6" style={{ marginBottom: '10px' }}>

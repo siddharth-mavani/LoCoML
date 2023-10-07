@@ -42,18 +42,14 @@ function DataPreprocessing() {
         axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
             .then((response) => {
                 console.log(response.data);
-
-                // remove the .csv at the end 
-                response.data.datasets.forEach((dataset, index) => {
-                    response.data.datasets[index] = dataset.slice(0, -4);
-                });
-
-                setDatasets(response.data.datasets);
+                let dataset_list = response.data['dataset_list'];
+                setDatasets(dataset_list);
             })
             .catch((error) => {
                 console.log(error);
             });
     }, []);
+    
 
 
     const handleClickAuto = () => {
@@ -103,7 +99,7 @@ function DataPreprocessing() {
         } finally {
             // Send request to backend to begin preprocessing
             axios.post(process.env.REACT_APP_PREPROCESSING_URL, {
-                name: selectedDataset + '.csv',
+                dataset_id: selectedDataset["dataset_id"],
                 tasks: finalTasks
             })
             .then((response) => {
@@ -180,7 +176,7 @@ function DataPreprocessing() {
                             <>
                                 <Card className="card-plain">
                                     <CardHeader>
-                                        <CardTitle tag="h2">{selectedDataset}</CardTitle>
+                                        <CardTitle tag="h2">{selectedDataset.dataset_name}</CardTitle>
                                     </CardHeader>
                                     <CardBody>
                                         <Row>
@@ -268,7 +264,7 @@ function DataPreprocessing() {
                                     <tbody>
                                         {datasets.map((dataset, index) => (
                                             <tr key={index}>
-                                                <td className="text-center">{dataset}</td>
+                                                <td className="text-center">{dataset["dataset_name"]}</td>
                                                 <td className="text-center">
                                                     <Button color="info" onClick={() => handleSelect(dataset)}>Select</Button>
                                                 </td>
