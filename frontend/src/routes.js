@@ -48,7 +48,7 @@ var routes = [
     showInSidebar: true,
     // icon: "nc-icon nc-cloud-upload-94",
     component: <EDA />,
-    layout: "/admin",
+    // layout: "/admin",
   },
   {
     path: "/data-preprocessing",
