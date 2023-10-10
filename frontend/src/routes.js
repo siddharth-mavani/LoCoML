@@ -66,7 +66,7 @@ var routes = [
   },
   {
     path: "/models",
-    name: "Trained Models",
+    name: "Model Zoo",
     showInSidebar: true,
     // icon: "nc-icon nc-cloud-upload-94",
     component: <TrainedModels />,

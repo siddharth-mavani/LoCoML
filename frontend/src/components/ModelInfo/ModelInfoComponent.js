@@ -118,6 +118,7 @@ function ModelInfoComponent(props) {
                             <Tab label="Visualizations" {...a11yProps(1)} />
                             <Tab label="Parameters" {...a11yProps(2)} />
                             <Tab label="All Models Results" {...a11yProps(3)} />
+                            <Tab label="Versions" {...a11yProps(4)}/>
                         </Tabs>
                     </Box>
                     <CustomTabPanel value={value} index={2}>
@@ -250,6 +251,11 @@ function ModelInfoComponent(props) {
                                     </tr>
                                 ))}
                             </tbody>
+                        </ReactStrapTable>
+                    </CustomTabPanel>
+                    <CustomTabPanel value={value} index={4}>
+                        <ReactStrapTable striped>
+                            This model does not have any versions
                         </ReactStrapTable>
                     </CustomTabPanel>
                 </Col>
