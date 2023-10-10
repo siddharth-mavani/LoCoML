@@ -7,3 +7,11 @@ Rohan Chowdary
 
 Project Guide:
 Dr. Karthik Vaidhyanathan
+
+## To-DO
+
+- [x] Update the Model Details link in inference page (currently gives error)
+- [x] Model Versioning
+- [x] Model Deployment
+- [x] Update Inference backend for updated data format
+- [x] Progress bar for inference
