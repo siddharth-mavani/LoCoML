@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Table } from "reactstrap";
 import Papa from "papaparse";
+import { Typography } from "@mui/material";
 
 function EDA() {
   const [csvData, setCsvData] = useState([]);
@@ -88,58 +89,60 @@ function EDA() {
     return maxValue - minValue;
   };
 
-//   const calculateCorrelation = (values1, values2) => {
-//     const mean1 = calculateMean(values1);
-//     const mean2 = calculateMean(values2);
-//     const sumProduct = values1.reduce((sum, value1, index) => sum + value1 * values2[index], 0);
-//     const sumSquared1 = values1.reduce((sum, value1) => sum + Math.pow(value1 - mean1, 2), 0);
-//     const sumSquared2 = values2.reduce((sum, value2) => sum + Math.pow(value2 - mean2, 2), 0);
-//     const correlation = sumProduct / Math.sqrt(sumSquared1 * sumSquared2);
-//     return correlation;
-//   };
+  //   const calculateCorrelation = (values1, values2) => {
+  //     const mean1 = calculateMean(values1);
+  //     const mean2 = calculateMean(values2);
+  //     const sumProduct = values1.reduce((sum, value1, index) => sum + value1 * values2[index], 0);
+  //     const sumSquared1 = values1.reduce((sum, value1) => sum + Math.pow(value1 - mean1, 2), 0);
+  //     const sumSquared2 = values2.reduce((sum, value2) => sum + Math.pow(value2 - mean2, 2), 0);
+  //     const correlation = sumProduct / Math.sqrt(sumSquared1 * sumSquared2);
+  //     return correlation;
+  //   };
 
 
-return (
+  return (
     <div className="content">
-      <div style={{ overflowX: 'auto' }}>
-        <Table>
-          {/* Display Column Information */}
-          <thead>
-            <tr>
-              <th>Column Name</th>
-              <th>Index</th>
-              <th>Variable Type</th>
-              <th>Num Unique Values</th>
-              <th>Mean</th>
-              <th>Std Dev</th>
-              <th>Median</th>
-              <th>Min</th>
-              <th>Max</th>
-              <th>Missing Values</th>
-              <th>Range</th>
-            </tr>
-          </thead>
-          <tbody>
-            {columnInfo.map((info, index) => (
-              <tr key={index}>
-                <td>{info.name}</td>
-                <td>{info.index}</td>
-                <td>{info.variableType}</td>
-                <td>{info.numUniqueValues}</td>
-                {/* /* show till 2 decimal places */}
-                {/* <td>{info.mean.toFixed(2)}</td> */}
-                <td>{info.mean}</td>
-                <td>{info.stdDev}</td>
-                <td>{info.median}</td>
-                <td>{info.min}</td>
-                <td>{info.max}</td>
-                <td>{info.missingValues}</td>
-                <td>{info.range}</td>
+      <Typography>
+        <div style={{ overflowX: 'auto' }}>
+          <Table>
+            {/* Display Column Information */}
+            <thead>
+              <tr>
+                <th>Column Name</th>
+                <th>Index</th>
+                <th>Variable Type</th>
+                <th>Num Unique Values</th>
+                <th>Mean</th>
+                <th>Std Dev</th>
+                <th>Median</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Missing Values</th>
+                <th>Range</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
+            </thead>
+            <tbody>
+              {columnInfo.map((info, index) => (
+                <tr key={index}>
+                  <td>{info.name}</td>
+                  <td>{info.index}</td>
+                  <td>{info.variableType}</td>
+                  <td>{info.numUniqueValues}</td>
+                  {/* /* show till 2 decimal places */}
+                  {/* <td>{info.mean.toFixed(2)}</td> */}
+                  <td>{info.mean}</td>
+                  <td>{info.stdDev}</td>
+                  <td>{info.median}</td>
+                  <td>{info.min}</td>
+                  <td>{info.max}</td>
+                  <td>{info.missingValues}</td>
+                  <td>{info.range}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      </Typography>
     </div>
   );
 }
