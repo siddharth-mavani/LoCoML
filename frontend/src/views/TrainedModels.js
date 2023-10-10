@@ -8,6 +8,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import UpdateIcon from '@mui/icons-material/Update';
 import { IconButton } from "@mui/material";
 import { CircularProgress, Typography } from "@mui/material";
 function TrainedModels() {
@@ -149,13 +150,9 @@ function TrainedModels() {
                                     <TableCell>{model.objective.charAt(0).toUpperCase() + model.objective.slice(1)}</TableCell>
                                     <TableCell>{model.metric_type}</TableCell>
                                     <TableCell>{getMetricValue(model.evaluation_metrics, model.metric_type)}</TableCell>
-                                    <TableCell><IconButton
-                                        size="small"
-                                        color="primary"
-                                        onClick={() => downloadModel(model.pickled_model)}
-                                    >
-                                        <FileDownloadIcon />
-                                    </IconButton>
+                                    <TableCell>
+                                        <Button color="success" onClick={() => downloadModel(model.pickled_model)} startIcon={<FileDownloadIcon />}>Download</Button>
+                                        <Button color="success" startIcon={<UpdateIcon />}>Update</Button>
                                     </TableCell>
                                 </TableRow>
                             );

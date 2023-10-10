@@ -33,5 +33,6 @@ def getDatasetFile(dataset_id):
 @getDatasets.route('/getDatasets/columns/<model_name>')
 def getDatasetColumns(model_name):
     collection = db['Models_Trained']
+    
     data = collection.find_one({'model_name': model_name})
     return {'target_column': data['target_column'], 'non_target_columns': data['non_target_columns']}
