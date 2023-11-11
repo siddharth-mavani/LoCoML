@@ -98,13 +98,13 @@ function Inference() {
         const file = e.target.files[0];
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('model', JSON.stringify(selectedModel));
+        formData.append('model_id', JSON.stringify(selectedModel.model_id));
 
         axios.post(process.env.REACT_APP_INFERENCE_BATCH, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
-            data: { model: selectedModel }
+            data: { model_id: selectedModel.model_id }
         })
         .then((response) => {
             console.log(response.data);

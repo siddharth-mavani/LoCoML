@@ -16,8 +16,11 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Box from '@mui/material/Box';
-import MyComponent from "./OpenAISpec";
+import MyComponent from "./OpenAPISpec";
 
+
+import ModelCard from "components/ModelInfo/ModelInfoCard";
+import { Row, Col } from "reactstrap";
 
 function TrainedModels() {
     const [loading, setLoading] = React.useState(true);
@@ -38,11 +41,6 @@ function TrainedModels() {
     const [deployedModel, setDeployedModel] = React.useState();
 
     React.useEffect(() => {
-        // wait for 3 seconds
-        const timer = setTimeout(() => {
-            
-        }, 1000);
-
         axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
             .then((response) => {
                 console.log(response.data);
@@ -55,7 +53,7 @@ function TrainedModels() {
                 console.log(error);
             })
 
-            axios.get("http://localhost:5000/getTrainedModels")
+        axios.get("http://localhost:5000/getTrainedModels")
             .then(async (response) => {
                 console.log(response.data);
                 var temp = [];
@@ -76,10 +74,6 @@ function TrainedModels() {
             .catch((error) => {
                 console.log(error);
             })
-        
-
-
-        return () => clearTimeout(timer);
     }, []);
 
     function getDateFromTimestamp(timestamp) {
@@ -157,82 +151,21 @@ function TrainedModels() {
                     </Typography>
                 </div> :
                 <>
-                <Table striped bordered hover>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Date</TableCell>
-                            <TableCell>Time</TableCell>
-                            <TableCell>Dataset</TableCell>
-                            <TableCell>Model ID</TableCell>
-                            <TableCell>Model Name</TableCell>
-                            <TableCell>Training Type</TableCell>
-                            <TableCell>Model Type</TableCell>
-                            <TableCell>Objective</TableCell>
-                            <TableCell>Metric</TableCell>
-                            <TableCell>Value</TableCell>
-                            <TableCell>Download</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {trainedModels.map((model, index) => {
-                            return (
-                                <TableRow key={index}>
-                                    <TableCell>{getDateFromTimestamp(model.time)}</TableCell>
-                                    <TableCell>{getTimeIn12Hours(model.time)}</TableCell>
-                                    <TableCell>{datasets[model.dataset_id]} (id: {model.dataset_id} )</TableCell>
-                                    <TableCell>{model.model_id}</TableCell>
-                                    <TableCell
-                                        style={{
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={() => window.location.href = `/models/${model.model_id}`}
-                                    >
+                    <Row>
+                        {
+                            trainedModels.map((model, index) => {
 
-                                        <Typography variant="body1" style={{ color: '#007bff' }}>
-                                            {model.model_name}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>{model.training_mode}</TableCell>
-                                    <TableCell>{model.estimator_type}</TableCell>
-                                    <TableCell>{model.objective.charAt(0).toUpperCase() + model.objective.slice(1)}</TableCell>
-                                    <TableCell>{model.metric_type}</TableCell>
-                                    <TableCell>{getMetricValue(model.evaluation_metrics, model.metric_type)}</TableCell>
-                                    <TableCell>
-                                        <Button color="success" onClick={() => downloadModel(model.pickled_model)} startIcon={<FileDownloadIcon />}>Download</Button>
-                                        <br></br>
-                                        <Button color="success" startIcon={<UpdateIcon />}>Update</Button>
-                                        <br></br>
-                                        <Button color="success" onClick={() => handleDeploy(model)} startIcon={<PublishIcon />}>Deploy</Button>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
-                {modelDeployed ?
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '50vh', }}>
-                        <Typography variant="h6">
-                            Model {deployedModel} is deployed successfully
-                        </Typography>
+                                return (
+                                    <Col md="4">
+                                        <ModelCard modelDetails={model} dataset_map={datasets} key={index} />
+                                    </Col>
+                                );
 
-                        <div style={{ overflow: 'auto', marginTop: '10px'}}>
-                            <MyComponent />
-                        </div>
-                    </div>
-                    :
-                    <></>
-                }
-                </>
+                            })
+                        }
+                    </Row>
+                </>  
             }
-            <Dialog open={deployLoading}>
-                <DialogTitle>Deploying Model</DialogTitle>
-                <DialogContent>
-                    <Box display="flex" justifyContent="center" alignItems="center">
-                        <CircularProgress />
-                    </Box>
-                </DialogContent>
-            </Dialog>
-
         </div>
     );
 }

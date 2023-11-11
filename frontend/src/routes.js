@@ -26,6 +26,7 @@ import TrainedModels from "views/TrainedModels";
 import ModelDetails from "views/ModelDetails";
 import Inference from "views/Inference";
 import Delete from "views/Delete";
+import UpdateModel from "views/UpdateModel";
 
 var routes = [
   {
@@ -72,7 +73,7 @@ var routes = [
     component: <TrainedModels />,
   },
   {
-    path: "/models/:model_name",
+    path: "/models/:model_id",
     name: "Model Details",
     showInSidebar: false,
     component: <ModelDetails />,
@@ -88,6 +89,12 @@ var routes = [
     name: "Delete",
     showInSidebar: false,
     component: <Delete />,
+  },
+  {
+    path: "/update/model/:model_id",
+    name: "Update Model",
+    showInSidebar: false,
+    component: <UpdateModel />,
   }
 ];
 export default routes;

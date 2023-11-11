@@ -20,3 +20,18 @@ class RegressionMetrics(Enum):
     MAE = "Mean Absolute Error"
     MSE = "Mean Squared Error"
     RMSE = "Root Mean Squared Error"
+
+class Classifiers(Enum):
+    LogisticRegression = 'Logistic Regression'
+    DecisionTree = 'Decision Tree'
+    RandomForest = 'Random Forest'
+    AdaBoost = 'Ada Boost'
+    SVM = 'SVM'
+    NaiveBayes = 'Naive Bayes'
+    KNN = 'K Nearest Neighbours'
+
+class Regressors(Enum):
+    Ridge = 'Ridge Regression'
+    BayesianRidge = 'Bayesian Ridge Regression'
+    RandomForestRegressor = 'Random Forest Regressor'
+    AdaBoostRegressor = 'Ada Boost Regressor'

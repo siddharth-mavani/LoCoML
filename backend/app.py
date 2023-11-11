@@ -11,6 +11,8 @@ from APIs.storeDataset import storeDataset
 from APIs.deployModel import deployModel
 from APIs.inference import inference_blueprint
 from APIs.eda import eda
+from APIs.utilities import utilityAPIs
+from APIs.updateModel import updateModelAPIs
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +27,8 @@ app.register_blueprint(storeDataset)
 app.register_blueprint(deployModel)
 app.register_blueprint(inference_blueprint)
 app.register_blueprint(eda)
+app.register_blueprint(utilityAPIs)
+app.register_blueprint(updateModelAPIs)
 
 
 app.config['REDIS_URL'] = os.getenv('REDIS_URL')

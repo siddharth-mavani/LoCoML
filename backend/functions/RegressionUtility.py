@@ -215,9 +215,3 @@ class RegressionUtility():
         residual_plot_data['residuals'] = (self.best_estimator.predict(self.X_test) - self.y_test).tolist()
         return residual_plot_data
     
-    # def get_cooks_distance_data(self):
-    #     regressor = self.best_estimator.named_steps['regressor']
-    #     cooks_distance_data = {}
-    #     cooks_distance_data['x'] = list(range(len(self.X_test)))
-    #     cooks_distance_data['y'] = OLSInfluence(regressor).cooks_distance[0].tolist()
-    #     return cooks_distance_data

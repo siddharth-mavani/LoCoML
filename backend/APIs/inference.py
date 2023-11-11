@@ -40,7 +40,6 @@ def inference_single():
     model_id  = request.json['model_id']
     collection = db['Model_zoo']
     model_info = collection.find_one({'model_id': model_id})
-    output_mapping = model_info['output_mapping']
     user_input_values = request.json['user_input_values']
 
     non_target_columns = []
@@ -63,15 +62,10 @@ def inference_single():
         return jsonify({'message': 'Invalid user input'}), 400
     
     new_prediction = model.predict(user_input_values)
+    new_prediction = str(new_prediction[0])
 
-    final = []
-    print("here: ", new_prediction)
-    print("Ayush is gay 909a@#$$")
-    # for i in range(len(new_prediction)): 
-    #     final.append(output_mapping[str(new_prediction[i])])
-    
     # Return the prediction
-    return jsonify({'prediction': final}), 400
+    return jsonify({'prediction': new_prediction}), 200
 
 
 def matchInputSchema(user_input, model_input_schema):
@@ -98,9 +92,11 @@ def matchInputSchema(user_input, model_input_schema):
 
 @inference_blueprint.route('/inference/batch', methods=['POST'])
 def inference_batch():
-    model_info = json.loads(request.form['model'])
-    model_id = model_info['model_id']
-    output_mapping = model_info['output_mapping']
+
+    model_id  = json.loads(request.form['model_id'])
+    print(model_id)
+    collection = db['Model_zoo']
+    model_info = collection.find_one({'model_id': model_id})
 
     # Load the pickled model from the file
     try:
@@ -127,12 +123,9 @@ def inference_batch():
         return jsonify({'message': 'Invalid file format'}), 400
 
     new_prediction = model.predict(user_input)
-    final = []
-    for i in range(len(new_prediction)): 
-        final.append(output_mapping[str(new_prediction[i])])
 
     # Append the prediction to the dataframe
-    user_input['prediction'] = final
+    user_input['prediction'] = new_prediction
 
     # Return csv file with prediction 
     return user_input.to_csv(index=False), 200

@@ -4,6 +4,7 @@ from mongo import db
 import os
 import sys 
 sys.path.append(os.getenv('PROJECT_PATH'))
+import bson.json_util as json_util
 
 from mongo import db
 
@@ -22,12 +23,19 @@ def getDatasetList():
         # dataset_list[i]['time'] = str(dataset_list[i]['time'])
     return {'dataset_list': dataset_list}
 
+@getDatasets.route('/getDatasetInfo/<dataset_id>')
+def getDatasetInfo(dataset_id):
+    collection = db['Datasets']
+    dataset_info = collection.find_one({'dataset_id': dataset_id})
+    return json_util.dumps(dataset_info)
+
 @getDatasets.route('/getDatasets/<dataset_id>')
 def getDatasetFile(dataset_id):
     # read file from Datasets folder
     # return file
     dataset_path = './Datasets/'+dataset_id+'.csv'
     # dataset_file = open(dataset_path + '/' + dataset_name)
+    # print(dataset_path)
     return send_file(dataset_path)
 
 @getDatasets.route('/getDatasets/columns/<model_name>')
