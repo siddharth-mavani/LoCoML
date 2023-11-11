@@ -9,15 +9,36 @@ import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import UpdateIcon from '@mui/icons-material/Update';
+import PublishIcon from '@mui/icons-material/Publish';
 import { IconButton } from "@mui/material";
 import { CircularProgress, Typography } from "@mui/material";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Box from '@mui/material/Box';
+
+
 import ModelCard from "components/ModelInfo/ModelInfoCard";
 import { Row, Col } from "reactstrap";
 
 function TrainedModels() {
     const [loading, setLoading] = React.useState(true);
-    const [trainedModels, setTrainedModels] = React.useState([]);
     const [datasets, setDatasets] = React.useState({});
+    const [trainedModels, setTrainedModels] = React.useState([{
+        "time": "2021-10-10T12:00:00.000Z",
+        "dataset_id": 1,
+        "model_id": "1L3JE5",
+        "training_mode": "auto",
+        "estimator_type": "RandomForestClassifier",
+        "objective": "classification",
+        "metric_type": "accuracy",
+        "evaluation_metrics": [{"metric_name": "accuracy", "metric_value": 0.9}],
+        "model_name": "Test",
+    }]);
+    const [deployLoading, setDeployLoading] = React.useState(false);
+    const [modelDeployed, setModelDeployed] = React.useState(false);
+    const [deployedModel, setDeployedModel] = React.useState();
+
     React.useEffect(() => {
         axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
             .then((response) => {
@@ -40,6 +61,7 @@ function TrainedModels() {
                         var parsed_model = JSON.parse(response.data.trained_models[i]);
                         temp.push(parsed_model);
                     } catch (error) {
+                        console.log(error);
                         console.error(`Invalid JSON in response.data.trained_models[${i}]:`, response.data.trained_models[i]);
                     }
                 }
@@ -91,6 +113,24 @@ function TrainedModels() {
         // url.revokeObjectURL(url);
         document.body.removeChild(link);
     }
+
+    async function handleDeploy(model_id) {
+        setDeployLoading(true);
+        try {
+            const response = await axios.post("http://127.0.0.1:5000/deploy", {
+                "model_id": "1L3JE5"
+            });
+            console.log(response);
+            setDeployedModel(model_id);
+            setModelDeployed(true);
+        } catch (error) {
+            console.log(error);
+        }
+        setDeployLoading(false);
+        
+}
+
+    
 
     return (
         <div className="content">

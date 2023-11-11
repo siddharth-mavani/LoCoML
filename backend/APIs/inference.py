@@ -1,5 +1,4 @@
 import pandas as pd
-from mongo import db
 from flask import Blueprint, jsonify, request
 import joblib
 import json
