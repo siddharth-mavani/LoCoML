@@ -13,6 +13,8 @@ import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Table as ReactStrapTable, Collapse } from "reactstrap";
+import axios from "axios";
+import { Button as MuiButton } from '@mui/material';
 
 const style = {
     position: 'absolute',
@@ -64,7 +66,19 @@ const ModelCard = (props) => {
     const modelDetails = props.modelDetails;
     const dataset_map = props.dataset_map;
     const [value, setValue] = React.useState(0);
+    const [showAllVersions, setShowAllVersions] = React.useState(false);
     const [selectedVersion, setSelectedVersion] = React.useState(1);
+    const [deployLoading, setDeployLoading] = React.useState(false);
+    const [modelDeployed, setModelDeployed] = React.useState(false);
+    const [deployedModel, setDeployedModel] = React.useState();
+    const [metricNames, setMetricNames] = React.useState([]);
+    const [bestVersion, setBestVersion] = React.useState(1);
+    const [bestMetric, setBestMetric] = React.useState(modelDetails.metric_type);
+    const [bestVersionSelected, setBestVersionSelected] = React.useState(false);
+
+    useEffect(() => {
+        setMetricNames(getMetricNames());
+    }, []);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -99,6 +113,43 @@ const ModelCard = (props) => {
 
     const onClickDeploy = () => {
         setDeployModalOpen(true);
+    }
+
+    const DeployModel = async () => {
+        setDeployLoading(true);
+        try {
+            const response = await axios.post("http://127.0.0.1:5000/deploy", {
+                "model_id": modelDetails.model_id,
+                "version_number": selectedVersion,
+            });
+            console.log(response);
+            setDeployedModel(modelDetails.model_id);
+            setModelDeployed(true);
+        } catch (error) {
+            console.log(error);
+        }
+        setDeployLoading(false);
+    }
+
+    const getMetricNames = () => {
+        var metric_names = [];
+        for (var i = 0; i < modelDetails.evaluation_metrics.length; i++) {
+            if (modelDetails.evaluation_metrics[i].metric_name != 'classifier')
+                metric_names.push(modelDetails.evaluation_metrics[i].metric_name);
+        }
+        return metric_names;
+    }
+
+    const selectBestVersion = (metric_type) => {
+        var best_value = 0;
+        var best_version = 0;
+        for (var i = 0; i < modelDetails.versions.length; i++) {
+            if (modelDetails.versions[i].evaluation_metrics[metric_type] > best_value) {
+                best_version = modelDetails.versions[i].version_number;
+                best_value = modelDetails.versions[i].evaluation_metrics[metric_type];
+            }
+        }
+        return best_version + 1;
     }
 
     return (
@@ -174,89 +225,142 @@ const ModelCard = (props) => {
                     <Typography
                         variant="h6"
                         // bold
-                        style={{textAlign: "center", marginBottom: '1.5rem' }}
+                        style={{ textAlign: "center", marginBottom: '1.5rem' }}
                     >
                         {modelDetails.model_name} (ID: {modelDetails.model_id})
                     </Typography>
                     <Typography>
                         <Row className="align-items-center mb-3">
-                            <Col md="3">
-                                Select Version:
+                            <Col md="5">
+                                <Row className="align-items-center mb-3">
+                                    <Col md="6">
+                                        Select Version:
+                                    </Col>
+                                    <Col md="6">
+                                        <select
+                                            className="form-control"
+                                            value={selectedVersion}
+                                            onChange={(e) => { setSelectedVersion(e.target.value); setBestVersionSelected(false); }}
+                                        >
+                                            {modelDetails.versions.map((version, index) => {
+                                                return (
+                                                    <option value={version.version_number}>{version.version_number}</option>
+                                                );
+                                            })}
+                                        </select>
+                                    </Col>
+                                </Row>
+                                <Row className="align-items-center mb-3">
+                                    <Col md="12">
+                                        <Typography variant="subtitle1" style={{textAlign: "center"}}>
+                                            OR
+                                        </Typography>
+                                    </Col>
+                                </Row>
+                                <Row className="align-items-center mb-3">
+                                    <Col md="6">
+                                        Select Model which has best:
+                                    </Col>
+                                    <Col md="6">
+                                        <select
+                                            className="form-control"
+                                            value={bestMetric}
+                                            onChange={(e) => { setBestMetric(e.target.value); }}
+                                        >
+                                            {metricNames.map((metric, index) => {
+                                                return (
+                                                    <option value={metric}>{metric}</option>
+                                                );
+                                            })}
+                                        </select>
+                                    </Col>
+                                </Row>
+                                {
+                                    bestVersionSelected ?
+                                        <Row className="align-items-center mb-3">
+                                            <Col md="12">
+                                                <Typography variant="body1" style={{ textAlign: "center", color: "green" }}>
+                                                    Version {bestVersion} has best {bestMetric} score of {getMetricValue(modelDetails.versions[bestVersion - 1].evaluation_metrics, bestMetric)} and has been selected.
+                                                </Typography>
+                                            </Col>
+                                        </Row>
+                                        : null
+                                }
+                                <Row className="align-items-center mb-3">
+                                    <Button color="info" onClick={() => { setSelectedVersion(selectBestVersion(modelDetails.metric_type)); setBestVersionSelected(true) }}>Select Best Version</Button>
+                                </Row>
                             </Col>
-                            <Col md="2">
-                                <select
-                                    className="form-control"
-                                    value={selectedVersion}
-                                    onChange={(e) => setSelectedVersion(e.target.value)}
-                                >
-                                    {modelDetails.versions.map((version, index) => {
-                                        return (
-                                            <option value={version.version_number}>{version.version_number}</option>
-                                        );
-                                    })}
-                                </select>
-                            </Col>
+
                             <Col md="7">
-                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                <Typography
+                                    style={{ textAlign: "right" }} >
+                                    <MuiButton onClick={() => { setShowAllVersions(!showAllVersions) }}>{!showAllVersions ? 'Show all versions' : 'Show Selected Version'}</MuiButton>
+                                </Typography>
+                                {!showAllVersions ? <> <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <Tabs value={value} onChange={handleChange}>
                                         <Tab label="Metrics" {...a11yProps(0)} />
                                         <Tab label="Parameters" {...a11yProps(1)} />
                                     </Tabs>
                                 </Box>
-                                <CustomTabPanel value={value} index={0}>
-                                    <ReactStrapTable striped>
-                                        <thead>
-                                            <tr>
-                                                <th>Metric</th>
-                                                <th>Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {modelDetails.versions[selectedVersion - 1].evaluation_metrics.map((metric, index) => {
+                                    <CustomTabPanel value={value} index={0}>
+                                        <ReactStrapTable striped>
+                                            <thead>
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {modelDetails.versions[selectedVersion - 1].evaluation_metrics.map((metric, index) => {
 
-                                                if (metric.metric_name != 'classifier') {
+                                                    if (metric.metric_name != 'classifier') {
+                                                        return (
+                                                            <tr key={index}>
+                                                                <td>{metric.metric_name}</td>
+                                                                <td>{metric.metric_value}</td>
+                                                            </tr>)
+                                                    }
+                                                    else {
+                                                        return null;
+                                                    }
+                                                    ;
+                                                })}
+                                            </tbody>
+                                        </ReactStrapTable>
+                                    </CustomTabPanel>
+                                    <CustomTabPanel value={value} index={1}>
+                                        <ReactStrapTable striped>
+                                            <thead>
+                                                <tr>
+                                                    <th>Parameter</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {modelDetails.versions[selectedVersion - 1].parameters.map((parameter, index) => {
                                                     return (
-                                                        <tr key={index}>
-                                                            <td>{metric.metric_name}</td>
-                                                            <td>{metric.metric_value}</td>
-                                                        </tr>)
+                                                        <tr hover size='small' key={index}>
+                                                            <td>{parameter.parameter_name}</td>
+                                                            <td>{parameter.parameter_value}</td>
+                                                        </tr>
+                                                    );
                                                 }
-                                                else {
-                                                    return null;
-                                                }
-                                                ;
-                                            })}
-                                        </tbody>
-                                    </ReactStrapTable>
-                                </CustomTabPanel>
-                                <CustomTabPanel value={value} index={1}>
-                                    <ReactStrapTable striped>
-                                        <thead>
-                                            <tr>
-                                                <th>Parameter</th>
-                                                <th>Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {modelDetails.versions[selectedVersion - 1].parameters.map((parameter, index) => {
-                                                return (
-                                                    <tr hover size='small' key={index}>
-                                                        <td>{parameter.parameter_name}</td>
-                                                        <td>{parameter.parameter_value}</td>
-                                                    </tr>
-                                                );
-                                            }
-                                            )}
-                                        </tbody>
-                                    </ReactStrapTable>
-                                </CustomTabPanel>
+                                                )}
+                                            </tbody>
+                                        </ReactStrapTable>
+                                    </CustomTabPanel>
+                                </> :
+                                    <>
+
+                                    </>
+                                }
                             </Col>
                         </Row>
                         <Row>
-                            <Col md="6" style={{textAlign: "center"}}>
+                            <Col md="6" style={{ textAlign: "center" }}>
                                 <Button size="large" color="info" onClick={() => setDeployModalOpen(false)}>Cancel</Button>
                             </Col>
-                            <Col md="6" style={{textAlign: "center"}}>
+                            <Col md="6" style={{ textAlign: "center" }}>
                                 <Button size="large" color="success">Deploy</Button>
                             </Col>
                         </Row>
