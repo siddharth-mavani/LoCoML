@@ -67,7 +67,7 @@ function Train() {
     const [targetColumn, setTargetColumn] = React.useState('');
     const [modelName, setModelName] = React.useState('');
     const [trainingCompleted, setTrainingCompleted] = React.useState(false);
-    const [trainingResponse, setTrainingResponse] = React.useState();
+    const [trainingResponse, setTrainingResponse] = React.useState({});
 
     const [trainingStatus, setTrainingStatus] = React.useState({
         progress: 0,
@@ -165,6 +165,7 @@ function Train() {
             'metric_type': metricType,
             'model_name': modelName,
             'target_column': targetColumn,
+            'isUpdate' : 'False'
         })
             .then((response) => {
                 setTrainingResponse(response.data);
@@ -199,7 +200,7 @@ function Train() {
                         </Box>
                         {activeStep === steps.length ? (
                             <>
-                               { Object.keys(trainingResponse).length > 0 && <ModelInfoComponent modelDetails={trainingResponse} /> }
+                               { Object.keys(trainingResponse).length > 0 ? <ModelInfoComponent modelDetails={trainingResponse} /> : null}
                             </>
                         ) : (
                             <React.Fragment>

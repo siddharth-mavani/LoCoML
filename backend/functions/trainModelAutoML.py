@@ -6,38 +6,12 @@ import pickle
 import nanoid
 import os
 import sys 
-
+from icecream import ic
 project_path = os.getenv('PROJECT_PATH')
 sys.path.append(project_path)
 sys.path.append('../Enums/')
 from Enums.enums import ClassificationMetrics, RegressionMetrics
 from mongo import db
-
-
-# metric_type_map = {
-#     'Accuracy' : 'Accuracy',
-#     'AUC' : 'AUC',
-#     'Precision' : 'Prec.',
-#     'Recall' : 'Recall',
-#     'F1' : 'F1',
-#     'R2 Score' : 'R2',
-#     'Mean Absolute Error' : 'MAE',
-#     'Mean Squared Error' : 'MSE',
-#     'Root Mean Squared Error' : 'RMSE',
-# }
-
-
-# metric_type_reverse_map = {
-#     'Accuracy' : 'Accuracy',
-#     'AUC' : 'AUC',
-#     'Prec.' : 'Precision',
-#     'Recall' : 'Recall',
-#     'F1' : 'F1',
-#     'R2' : 'R2 Score',
-#     'MAE' : 'Mean Absolute Error',
-#     'MSE' : 'Mean Squared Error',
-#     'RMSE' : 'Root Mean Squared Error',
-# }
 
 def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_type, objective):
     
@@ -59,34 +33,16 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
         elif objective.lower() == 'regression':
             metric_type = RegressionMetrics.R2.value
 
-
+    ic(objective.lower())
     if objective.lower() == 'classification':
-        clf_util = ClassificationUtility(df, target_column, metric_type)
+        clf_util = ClassificationUtility(df, target_column, 'AutoML', None, metric_type)
     elif objective.lower() == 'regression':
-        clf_util = RegressionUtility(df, target_column, metric_type)
+        clf_util = RegressionUtility(df, target_column, 'AutoML', None, metric_type)
 
     
-
-    # df = df[df[target_column].notnull()]
-    
-    # s = exp.setup(df, target=target_column , session_id = 123)
-
-    # models_list = []
-    # if objective.lower() == 'classification':
-    #     models_list = ['lr', 'dt', 'rf', 'ada', 'nb', 'knn', 'svm']
-    # elif objective.lower() == 'regression':
-    #     models_list = ['ridge', 'br']
 
     clf_util.trainAutoML()
     results = clf_util.results
-    # best = exp.compare_models(include = models_list, sort = metric_type_map[metric_type])
-
-    # results = exp.pull()
-
-    # if objective.lower() == 'classification':
-    #     results.drop(['TT (Sec)','Kappa', 'MCC'], axis=1, inplace=True)
-    # elif objective.lower() == 'regression':
-    #     results.drop(['TT (Sec)', 'RMSLE', 'MAPE'], axis=1, inplace=True)
 
     if objective.lower() == 'classification':
         best_model_name = clf_util.getBestModel(metric_type)['classifier']
@@ -113,7 +69,7 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
             'parameter_value' : value
         })
 
-    print("Status: Saving Model and Pipeline", file=sys.stderr)
+    print("Status: Saving Model and Pipeline in file system", file=sys.stderr)
     model_id = nanoid.generate(alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', size=6)
     save_path = os.getenv('PROJECT_PATH') + 'Models/' + model_id + '.pkl'
     clf_util.saveModel(best_model_name, save_path)
@@ -123,11 +79,17 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
     output_schema = clf_util.get_output_schema()
     output_mapping = clf_util.get_output_mapping()
 
+    print("Status: Generating Visualization data", file=sys.stderr)
+
     graph_data = {}
     if objective.lower() == 'classification':
+        print("Status: Generating Confusion Matrix", file=sys.stderr)
         cm = clf_util.get_confusion_matrix()
+        print("Status: Generating Feature Importance", file=sys.stderr)
         feature_importance = clf_util.get_feature_importance()
+        print("Status: Generating Precision-Recall Curve", file=sys.stderr)
         pr_data = clf_util.get_precision_recall_data()
+        print("Status: Generating ROC Curve", file=sys.stderr)
         auc_data = clf_util.get_auc_data()
         graph_data = {
             'confusion_matrix' : cm,
@@ -136,8 +98,11 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
             'auc_data' : auc_data
         }
     else:
+        print("Status: Generating Feature Importance", file=sys.stderr)
         feature_importance = clf_util.get_feature_importance()
+        print("Status: Generating Scatter Plot", file=sys.stderr)
         scatter_plot_data = clf_util.get_scatter_plot_data()
+        print("Status: Generating Residual Plot", file=sys.stderr)
         residual_plot_data = clf_util.get_residual_plot_data()
         graph_data = {
             'feature_importance' : feature_importance,
@@ -168,7 +133,19 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
         'input_schema' : input_schema,
         'output_schema' : output_schema,
         'output_mapping' : output_mapping,
-        'graph_data' : graph_data
+        'graph_data' : graph_data,
+        'versions' : [{
+            'time' : datetime.datetime.now(),
+            'model_id' : model_id,
+            'model_name' : model_name,
+            'estimator_type' : best_model_name,
+            'saved_model_path' : save_path,
+            'parameters' : parameters,
+            'evaluation_metrics' : metrics,
+            'output_mapping' : output_mapping,
+            'graph_data' : graph_data,
+            'version_number' : 1
+        }]
     }
 
     # print(details)
@@ -179,11 +156,16 @@ def trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_
 
 dataset_id = sys.argv[1]
 model_name = sys.argv[2]
-target_column = sys.argv[3]
-metric_mode = sys.argv[4]
-metric_type = sys.argv[5]
-objective = sys.argv[6]
-model_type = sys.argv[7] # not needed in automl
+model_type = sys.argv[3] # not needed in automl
+hyperparameters = sys.argv[4] # not needed while training for first time
+target_column = sys.argv[5]
+metric_mode = sys.argv[6]
+metric_type = sys.argv[7]
+objective = sys.argv[8]
+model_id = sys.argv[9] # not needed in automl
+isUpdate = sys.argv[10] # not needed in automl
+
+ic(dataset_id, model_name, model_type, hyperparameters, target_column, metric_mode, metric_type, objective, model_id)
 
 details = trainModelAutoML(dataset_id, model_name, target_column, metric_mode, metric_type, objective)
 details_path = os.getenv('PROJECT_PATH') + 'Usage/details.pkl'

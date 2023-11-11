@@ -5,7 +5,12 @@ import subprocess
 import sys
 import pickle 
 import os
-
+import json
+import itertools
+from tqdm import tqdm
+import requests
+import bson.json_util as json_util
+ 
 trainModelAPIs = Blueprint('trainModel', __name__)
 
 @trainModelAPIs.route('/trainModel', methods=['GET', 'POST'])
@@ -20,6 +25,19 @@ def trainModel():
     metric_type = data['metric_type']
     training_mode = data['training_mode']
     model_type = data['model_type']
+    isUpdate = data['isUpdate']
+
+    # check if hyperparameters are provided
+
+    if isUpdate.lower() != 'true':
+        hyperparameters = 'None'
+        model_id = 'None'
+    else:
+        if 'hyperparameters' in data:
+            hyperparameters = json.dumps(data['hyperparameters'])
+        else:
+            hyperparameters = 'None'
+        model_id = data['model_id']
 
     # if metric_type.lower() != 'autoselect':
     #     metric_type = data['custom_metric_type']
@@ -29,7 +47,7 @@ def trainModel():
     else:
         process_path = os.getenv('PROJECT_PATH') + 'functions/trainModelCustom.py'
     
-    process = subprocess.Popen(['python3', '-u', process_path, dataset_id, model_name, target_column, metric_mode, metric_type, objective, model_type], stderr=subprocess.PIPE, bufsize=1, text=True)
+    process = subprocess.Popen(['python3', '-u', process_path, dataset_id, model_name, model_type, hyperparameters, target_column, metric_mode, metric_type, objective, model_id, isUpdate], stderr=subprocess.PIPE, bufsize=1, text=True)
     
 
     status = 'Loading'
@@ -93,10 +111,64 @@ def trainModel():
     details_path = os.getenv('PROJECT_PATH') + 'Usage/details.pkl'
     with open(details_path, 'rb') as f:
         details = pickle.load(f)
-    return details
+    print(type(details))
+    return json_util.dumps(details)
 
-    if model_type.lower() == 'automl':
-        return trainModelAutoML(dataset_name, model_name, target_column, metric_type, objective)
-    else:
-        model_type = data['custom_model_type']
-        return trainModelCustom(dataset_name, model_name, target_column, model_type, metric_type, objective)
+@trainModelAPIs.route('/hyperparameterTuning', methods=['GET', 'POST'])
+def hyperparameterTuning():
+    data = request.get_json()
+    dataset_id = data['dataset_id']
+    model_name = data['model_name']
+    target_column = data['target_column']
+    objective = data['objective']
+    metric_mode = data['metric_mode']
+    metric_type = data['metric_type']
+    training_mode = data['training_mode']
+    model_type = data['model_type']
+    hyperparameter_grid = data['hyperparameter_grid']
+    model_id = data['model_id']
+
+    # make combinations of hyperparameters
+    hyperparameters = []
+    keys = []
+    for key in hyperparameter_grid:
+        keys.append(key)
+        hyperparameters.append(hyperparameter_grid[key])
+
+    hyperparameters = list(itertools.product(*hyperparameters))
+
+    hyperparameters_dict = []
+    for hyperparameter in hyperparameters:
+        hyperparameters_dict.append(dict(zip(keys, hyperparameter)))
+
+    pbar = tqdm(hyperparameters_dict)
+    
+    best_hyperparameters = None
+    best_metric = None
+
+    for hyperparameter in pbar:
+        pbar.set_description("Processing %s" % hyperparameter)
+        
+        response = requests.post('http://localhost:5000/trainModel', json={
+            'dataset_id': dataset_id,
+            'model_name': model_name,
+            'target_column': target_column,
+            'objective': objective,
+            'metric_mode': metric_mode,
+            'metric_type': metric_type,
+            'training_mode': training_mode,
+            'model_type': model_type,
+            'hyperparameters': hyperparameter,
+            'model_id': model_id
+        })
+
+        cur_metric = response.json()['evaluation_metrics'][metric_type.lower()]
+        cur_metric = float(cur_metric)
+        
+        if best_metric == None or cur_metric > best_metric:
+            best_metric = cur_metric
+            best_hyperparameters = hyperparameter
+
+    
+    
+    

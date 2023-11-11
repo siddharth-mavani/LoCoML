@@ -18,7 +18,8 @@ import pandas as pd
 import joblib
 import numpy as np
 import os
-import sys 
+import sys
+from icecream import ic 
 project_path = os.getenv('PROJECT_PATH')
 sys.path.append(project_path)
 sys.path.append('../Enums/')
@@ -35,11 +36,13 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class ClassificationUtility():
-    def __init__(self, data, target_column, metric_to_optimize=ClassificationMetrics.Accuracy.value):
+    def __init__(self, data, target_column, trainingMode='AutoML', hyperparameters=None, metric_to_optimize=ClassificationMetrics.Accuracy.value):
         self.data = data
         self.target_column = target_column
         self.metric_to_optimize = metric_to_optimize
         self.cardinality_threshold = 10
+        self.hyperparameters = hyperparameters
+        self.trainingMode = trainingMode
         self.classifiers = [
             LogisticRegression(max_iter=1000),
             DecisionTreeClassifier(),
@@ -195,13 +198,64 @@ class ClassificationUtility():
         self.results = pd.DataFrame(results)
         self.best_model = self.getBestModel(self.metric_to_optimize)
 
+    def trainCustom(self, model_type):
+        self.prepare_data()
+        self.get_preprocessor()
+        print("Status: Setting up Custom Training", file=sys.stderr)
+        classification_metrics = ClassificationMetrics
+
+        results = []
+        classifier = self.classifiers_dict[model_type]
+        if self.hyperparameters != 'None':
+            classifier.set_params(**self.hyperparameters)
+            
+        self.get_estimator(classifier)
+
+        print("Status: Started Training ", file=sys.stderr)
+        self.estimator.fit(self.X_train, self.y_train)
+        y_pred = self.estimator.predict(self.X_test)
+        # print(y_pred)
+
+        accuracy = accuracy_score(self.y_test, y_pred)
+        precision = precision_score(self.y_test, y_pred, average='macro')
+        recall = recall_score(self.y_test, y_pred, average='macro')
+        f1 = f1_score(self.y_test, y_pred, average='macro')
+        if len(self.le.classes_) == 2:
+            auc = roc_auc_score(self.y_test, self.estimator.predict_proba(self.X_test)[:, 1])
+        else:
+            auc = roc_auc_score(self.y_test, self.estimator.predict_proba(self.X_test), average='macro', multi_class='ovo')
+
+        results.append({
+            'classifier' : classifier.__class__.__name__,
+            classification_metrics.Accuracy.value : round(accuracy, 4),
+            classification_metrics.Precision.value : round(precision, 4),
+            classification_metrics.Recall.value : round(recall, 4),
+            classification_metrics.F1.value : round(f1, 4),
+            classification_metrics.AUC.value : round(auc, 4)
+        })
+
+        self.results = pd.DataFrame(results)
+        self.best_model = model_type
+        self.best_estimator = self.estimator
+        # self.best_model = self.getBestModel(self.metric_to_optimize)
+
+        print("Status: Training Completed", file=sys.stderr)
+
     def getBestModel(self, metric):
+        ic(self.trainingMode.lower())
+        if self.trainingMode.lower() != 'automl':
+            return self.best_model
+        
         self.results.sort_values(by=metric, ascending=False, inplace=True)
         self.best_model = self.results.iloc[0]
         self.best_estimator = self.trained_models[self.best_model['classifier']]
         return self.best_model
     
     def saveModel(self, model_name, save_path):
+        if self.trainingMode.lower() != 'automl':
+            joblib.dump(self.best_estimator, save_path)
+            self.save_path = save_path
+            return
         joblib.dump(self.trained_models[model_name], save_path)
         self.save_path = save_path
     

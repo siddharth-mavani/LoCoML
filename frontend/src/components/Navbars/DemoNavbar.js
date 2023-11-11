@@ -58,13 +58,25 @@ function Header(props) {
   const getBrand = () => {
     let brandName = "Default Brand";
     routes.map((prop, key) => {
-      if (window.location.href.indexOf(prop.path) !== -1) {
+      const regex = new RegExp(`^${prop.path.replace(/:[^\s/]+/g, "([\\w-]+)")}$`);
+      if (regex.test(window.location.pathname)) {
         brandName = prop.name;
       }
       return null;
     });
     return brandName;
   };
+  // const getBrand = () => {
+  //   let brandName = "Default Brand";
+  //   routes.map((prop, key) => {
+  //     // console.log(prop.path, window.location.href)
+  //     if (window.location.href.indexOf(prop.path) !== -1) {
+  //       brandName = prop.name;
+  //     }
+  //     return null;
+  //   });
+  //   return brandName;
+  // };
   const openSidebar = () => {
     document.documentElement.classList.toggle("nav-open");
     sidebarToggle.current.classList.toggle("toggled");

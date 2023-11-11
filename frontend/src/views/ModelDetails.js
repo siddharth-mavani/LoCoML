@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { Col, Row, Button as ReactStrapButton } from "reactstrap";
 import { Table as ReactStrapTable } from "reactstrap";
 import ModelInfoComponent from "components/ModelInfo/ModelInfoComponent";
-
+import ModelCard from "components/ModelInfo/ModelInfoCard";
 
 function ModelDetails() {
     // console.log("ModelDetails");
@@ -19,23 +19,24 @@ function ModelDetails() {
 
     React.useEffect(() => {
         // wait for 3 seconds
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1000);
+        // const timer = setTimeout(() => {
+        //     setLoading(false);
+        // }, 1000);
         // setModelDetails(JSON.parse(localStorage.getItem("modelDetails")));
         axios.get(process.env.REACT_APP_GET_TRAINED_MODELS_URL + '/' + model_id)
             .then(async (response) => {
-                if(response.data) {
-                    localStorage.setItem("modelDetails", JSON.stringify(response.data))
-                }
+                // if(response.data) {
+                //     localStorage.setItem("modelDetails", JSON.stringify(response.data))
+                // }
                 setModelDetails(response.data);
+                setLoading(false)
                 console.log(response.data);
             })
             .catch((error) => {
                 console.log(error);
             })
 
-        return () => clearTimeout(timer);
+        // return () => clearTimeout(timer);
     }, []);
 
     return (

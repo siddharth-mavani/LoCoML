@@ -24,4 +24,6 @@ def getTrainedModel(model_id):
     print(model_id)
     collection = db['Model_zoo']
     trained_model = collection.find_one({'model_id': model_id})
+    # sort version array according to the date
+    trained_model['versions'].sort(key=lambda x: x['time'], reverse=True)
     return json_util.dumps(trained_model)

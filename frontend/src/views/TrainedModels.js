@@ -11,16 +11,14 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import UpdateIcon from '@mui/icons-material/Update';
 import { IconButton } from "@mui/material";
 import { CircularProgress, Typography } from "@mui/material";
+import ModelCard from "components/ModelInfo/ModelInfoCard";
+import { Row, Col } from "reactstrap";
+
 function TrainedModels() {
     const [loading, setLoading] = React.useState(true);
     const [trainedModels, setTrainedModels] = React.useState([]);
     const [datasets, setDatasets] = React.useState({});
     React.useEffect(() => {
-        // wait for 3 seconds
-        const timer = setTimeout(() => {
-            
-        }, 1000);
-
         axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
             .then((response) => {
                 console.log(response.data);
@@ -33,7 +31,7 @@ function TrainedModels() {
                 console.log(error);
             })
 
-            axios.get("http://localhost:5000/getTrainedModels")
+        axios.get("http://localhost:5000/getTrainedModels")
             .then(async (response) => {
                 console.log(response.data);
                 var temp = [];
@@ -53,10 +51,6 @@ function TrainedModels() {
             .catch((error) => {
                 console.log(error);
             })
-        
-
-
-        return () => clearTimeout(timer);
     }, []);
 
     function getDateFromTimestamp(timestamp) {
@@ -110,55 +104,70 @@ function TrainedModels() {
                         Please wait...
                     </Typography>
                 </div> :
-                <Table striped bordered hover>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Date</TableCell>
-                            <TableCell>Time</TableCell>
-                            <TableCell>Dataset</TableCell>
-                            <TableCell>Model ID</TableCell>
-                            <TableCell>Model Name</TableCell>
-                            <TableCell>Training Type</TableCell>
-                            <TableCell>Model Type</TableCell>
-                            <TableCell>Objective</TableCell>
-                            <TableCell>Metric</TableCell>
-                            <TableCell>Value</TableCell>
-                            <TableCell>Download</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {trainedModels.map((model, index) => {
-                            return (
-                                <TableRow key={index}>
-                                    <TableCell>{getDateFromTimestamp(model.time)}</TableCell>
-                                    <TableCell>{getTimeIn12Hours(model.time)}</TableCell>
-                                    <TableCell>{datasets[model.dataset_id]} (id: {model.dataset_id} )</TableCell>
-                                    <TableCell>{model.model_id}</TableCell>
-                                    <TableCell
-                                        style={{
-                                            cursor: 'pointer'
-                                        }}
-                                        onClick={() => window.location.href = `/models/${model.model_id}`}
-                                    >
+                <>
+                    <Row>
+                        {
+                            trainedModels.map((model, index) => {
 
-                                        <Typography variant="body1" style={{ color: '#007bff' }}>
-                                            {model.model_name}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>{model.training_mode}</TableCell>
-                                    <TableCell>{model.estimator_type}</TableCell>
-                                    <TableCell>{model.objective.charAt(0).toUpperCase() + model.objective.slice(1)}</TableCell>
-                                    <TableCell>{model.metric_type}</TableCell>
-                                    <TableCell>{getMetricValue(model.evaluation_metrics, model.metric_type)}</TableCell>
-                                    <TableCell>
-                                        <Button color="success" onClick={() => downloadModel(model.pickled_model)} startIcon={<FileDownloadIcon />}>Download</Button>
-                                        <Button color="success" startIcon={<UpdateIcon />}>Update</Button>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
+                                return (
+                                    <Col md="4">
+                                        <ModelCard modelDetails={model} dataset_map={datasets} key={index} />
+                                    </Col>
+                                );
+
+                            })
+                        }
+                    </Row>
+                </>
+                // <Table striped bordered hover>
+                //     <TableHead>
+                //         <TableRow>
+                //             <TableCell>Date</TableCell>
+                //             <TableCell>Time</TableCell>
+                //             <TableCell>Dataset</TableCell>
+                //             <TableCell>Model ID</TableCell>
+                //             <TableCell>Model Name</TableCell>
+                //             <TableCell>Training Type</TableCell>
+                //             <TableCell>Model Type</TableCell>
+                //             <TableCell>Objective</TableCell>
+                //             <TableCell>Metric</TableCell>
+                //             <TableCell>Value</TableCell>
+                //             <TableCell>Download</TableCell>
+                //         </TableRow>
+                //     </TableHead>
+                //     <TableBody>
+                //         {trainedModels.map((model, index) => {
+                //             return (
+                //                 <TableRow key={index}>
+                //                     <TableCell>{getDateFromTimestamp(model.time)}</TableCell>
+                //                     <TableCell>{getTimeIn12Hours(model.time)}</TableCell>
+                //                     <TableCell>{datasets[model.dataset_id]} (id: {model.dataset_id} )</TableCell>
+                //                     <TableCell>{model.model_id}</TableCell>
+                //                     <TableCell
+                //                         style={{
+                //                             cursor: 'pointer'
+                //                         }}
+                //                         onClick={() => window.location.href = `/models/${model.model_id}`}
+                //                     >
+
+                //                         <Typography variant="body1" style={{ color: '#007bff' }}>
+                //                             {model.model_name}
+                //                         </Typography>
+                //                     </TableCell>
+                //                     <TableCell>{model.training_mode}</TableCell>
+                //                     <TableCell>{model.estimator_type}</TableCell>
+                //                     <TableCell>{model.objective.charAt(0).toUpperCase() + model.objective.slice(1)}</TableCell>
+                //                     <TableCell>{model.metric_type}</TableCell>
+                //                     <TableCell>{getMetricValue(model.evaluation_metrics, model.metric_type)}</TableCell>
+                //                     <TableCell>
+                //                         <Button color="success" onClick={() => downloadModel(model.pickled_model)} startIcon={<FileDownloadIcon />}>Download</Button>
+                //                         <Button color="success" startIcon={<UpdateIcon />} onClick={() => window.location.href = `/update/model/${model.model_id}`}>Update</Button>
+                //                     </TableCell>
+                //                 </TableRow>
+                //             );
+                //         })}
+                //     </TableBody>
+                // </Table>
             }
         </div>
     );

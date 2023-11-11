@@ -120,8 +120,14 @@ def inference_batch():
 
     new_prediction = model.predict(user_input)
     final = []
-    for i in range(len(new_prediction)): 
-        final.append(output_mapping[str(new_prediction[i])])
+    # check if output_mapping is empty
+    # print(output_mapping)
+    if len(output_mapping) != 0:
+        for i in range(len(new_prediction)): 
+            final.append(output_mapping[str(new_prediction[i])])
+    else:
+        for i in range(len(new_prediction)): 
+            final.append(new_prediction[i])
 
     # Append the prediction to the dataframe
     user_input['prediction'] = final
