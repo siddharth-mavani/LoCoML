@@ -9,12 +9,33 @@ import TableRow from '@mui/material/TableRow';
 import Button from '@mui/material/Button';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import UpdateIcon from '@mui/icons-material/Update';
+import PublishIcon from '@mui/icons-material/Publish';
 import { IconButton } from "@mui/material";
 import { CircularProgress, Typography } from "@mui/material";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Box from '@mui/material/Box';
+
+
 function TrainedModels() {
     const [loading, setLoading] = React.useState(true);
-    const [trainedModels, setTrainedModels] = React.useState([]);
     const [datasets, setDatasets] = React.useState({});
+    const [trainedModels, setTrainedModels] = React.useState([{
+        "time": "2021-10-10T12:00:00.000Z",
+        "dataset_id": 1,
+        "model_id": "1L3JE5",
+        "training_mode": "auto",
+        "estimator_type": "RandomForestClassifier",
+        "objective": "classification",
+        "metric_type": "accuracy",
+        "evaluation_metrics": [{"metric_name": "accuracy", "metric_value": 0.9}],
+        "model_name": "Test",
+    }]);
+    const [deployLoading, setDeployLoading] = React.useState(false);
+    const [modelDeployed, setModelDeployed] = React.useState(false);
+    const [deployedModel, setDeployedModel] = React.useState();
+
     React.useEffect(() => {
         // wait for 3 seconds
         const timer = setTimeout(() => {
@@ -42,6 +63,7 @@ function TrainedModels() {
                         var parsed_model = JSON.parse(response.data.trained_models[i]);
                         temp.push(parsed_model);
                     } catch (error) {
+                        console.log(error);
                         console.error(`Invalid JSON in response.data.trained_models[${i}]:`, response.data.trained_models[i]);
                     }
                 }
@@ -98,6 +120,24 @@ function TrainedModels() {
         document.body.removeChild(link);
     }
 
+    async function handleDeploy(model_id) {
+        setDeployLoading(true);
+        try {
+            const response = await axios.post("http://127.0.0.1:5000/deploy", {
+                "model_id": "1L3JE5"
+            });
+            console.log(response);
+            setDeployedModel(model_id);
+            setModelDeployed(true);
+        } catch (error) {
+            console.log(error);
+        }
+        setDeployLoading(false);
+        
+}
+
+    
+
     return (
         <div className="content">
             {loading ?
@@ -110,6 +150,7 @@ function TrainedModels() {
                         Please wait...
                     </Typography>
                 </div> :
+                <>
                 <Table striped bordered hover>
                     <TableHead>
                         <TableRow>
@@ -152,14 +193,36 @@ function TrainedModels() {
                                     <TableCell>{getMetricValue(model.evaluation_metrics, model.metric_type)}</TableCell>
                                     <TableCell>
                                         <Button color="success" onClick={() => downloadModel(model.pickled_model)} startIcon={<FileDownloadIcon />}>Download</Button>
+                                        <br></br>
                                         <Button color="success" startIcon={<UpdateIcon />}>Update</Button>
+                                        <br></br>
+                                        <Button color="success" onClick={() => handleDeploy(model.model_id)} startIcon={<PublishIcon />}>Deploy</Button>
                                     </TableCell>
                                 </TableRow>
                             );
                         })}
                     </TableBody>
                 </Table>
+                {modelDeployed ?
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+                        <Typography variant="h6">
+                            Model {deployedModel} is deployed successfully at localhost:8080
+                        </Typography>
+                    </div>
+                    :
+                    <></>
+                }
+                </>
             }
+            <Dialog open={deployLoading}>
+                <DialogTitle>Deploying Model</DialogTitle>
+                <DialogContent>
+                    <Box display="flex" justifyContent="center" alignItems="center">
+                        <CircularProgress />
+                    </Box>
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 }
