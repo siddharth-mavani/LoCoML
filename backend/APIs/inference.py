@@ -3,6 +3,8 @@ from flask import Blueprint, jsonify, request
 import joblib
 import json
 
+from mongo import db
+
 inference_blueprint = Blueprint('inference', __name__)
 
 @inference_blueprint.route('/inference', methods=['POST'])
@@ -35,11 +37,16 @@ def processData(user_input, model_input_schema):
 
 @inference_blueprint.route('/inference/single', methods=['POST'])
 def inference_single():
-    model_info = request.json['model']
-    model_id = model_info['model_id']
+    model_id  = request.json['model_id']
+    collection = db['Model_zoo']
+    model_info = collection.find_one({'model_id': model_id})
     output_mapping = model_info['output_mapping']
-    non_target_columns = request.json['non_target_columns']
     user_input_values = request.json['user_input_values']
+
+    non_target_columns = []
+    for column in model_info['input_schema']:
+        if column['column_name'] != model_info['target_column']:
+            non_target_columns.append(column['column_name'])
     
     # Load the pickled model from the file
     try:
@@ -58,11 +65,13 @@ def inference_single():
     new_prediction = model.predict(user_input_values)
 
     final = []
-    for i in range(len(new_prediction)): 
-        final.append(output_mapping[str(new_prediction[i])])
+    print("here: ", new_prediction)
+    print("Ayush is gay 909a@#$$")
+    # for i in range(len(new_prediction)): 
+    #     final.append(output_mapping[str(new_prediction[i])])
     
     # Return the prediction
-    return jsonify({'prediction': final}), 200
+    return jsonify({'prediction': final}), 400
 
 
 def matchInputSchema(user_input, model_input_schema):

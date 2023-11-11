@@ -16,6 +16,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Box from '@mui/material/Box';
+import MyComponent from "./OpenAISpec";
 
 
 function TrainedModels() {
@@ -120,18 +121,23 @@ function TrainedModels() {
         document.body.removeChild(link);
     }
 
-    async function handleDeploy(model_id) {
+    async function handleDeploy(model) {
+        console.log(model)
+        let model_id = model.model_id;
         setDeployLoading(true);
-        try {
-            const response = await axios.post("http://127.0.0.1:5000/deploy", {
-                "model_id": "1L3JE5"
-            });
-            console.log(response);
-            setDeployedModel(model_id);
-            setModelDeployed(true);
-        } catch (error) {
-            console.log(error);
-        }
+        // try {
+        //     const response = await axios.post("http://127.0.0.1:5000/deploy", {
+        //         // "model_id": "1L3JE5"
+        //         "model_id": model_id
+        //     });
+        //     console.log(response);
+        //     setDeployedModel(model_id);
+        //     setModelDeployed(true);
+        // } catch (error) {
+        //     console.log(error);
+        // }
+        setDeployedModel(model_id);
+        setModelDeployed(true);
         setDeployLoading(false);
         
 }
@@ -196,7 +202,7 @@ function TrainedModels() {
                                         <br></br>
                                         <Button color="success" startIcon={<UpdateIcon />}>Update</Button>
                                         <br></br>
-                                        <Button color="success" onClick={() => handleDeploy(model.model_id)} startIcon={<PublishIcon />}>Deploy</Button>
+                                        <Button color="success" onClick={() => handleDeploy(model)} startIcon={<PublishIcon />}>Deploy</Button>
                                     </TableCell>
                                 </TableRow>
                             );
@@ -204,10 +210,14 @@ function TrainedModels() {
                     </TableBody>
                 </Table>
                 {modelDeployed ?
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '50vh', }}>
                         <Typography variant="h6">
-                            Model {deployedModel} is deployed successfully at localhost:8080
+                            Model {deployedModel} is deployed successfully
                         </Typography>
+
+                        <div style={{ overflow: 'auto', marginTop: '10px'}}>
+                            <MyComponent />
+                        </div>
                     </div>
                     :
                     <></>

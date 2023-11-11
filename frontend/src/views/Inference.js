@@ -157,9 +157,8 @@ function Inference() {
         }
 
         axios.post(process.env.REACT_APP_INFERENCE_SINGLE, {
-            non_target_columns: columns,
             user_input_values: userInputValues,
-            model: selectedModel
+            model_id: selectedModel.model_id
             })
             .then((response) => {
                 console.log(response.data);

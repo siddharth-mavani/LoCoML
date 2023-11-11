@@ -15,6 +15,7 @@ package-lock.json
 /backend/Models
 /backend/APIs/__pycache__
 /backend/__pycache__
+/backend/app2/Model
 
 # misc
 .DS_Store
