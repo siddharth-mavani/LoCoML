@@ -1,10 +1,10 @@
 from flask import Blueprint, request
 import sys 
 sys.path.append('../')
-
 from mongo import db
 import os
 import bson.json_util as json_util
+from flask import send_file
 getTrainedModels = Blueprint('getTrainedModels', __name__)
 
 @getTrainedModels.route('/getTrainedModels', methods=['GET'])
@@ -28,3 +28,12 @@ def getTrainedModel(model_id):
     # sort version array according to the date
     trained_model['versions'].sort(key=lambda x: x['time'], reverse=True)
     return json_util.dumps(trained_model)
+
+@getTrainedModels.route('/getTrainedModelFile/<model_id>/<version>', methods=['GET'])
+def getTrainedModelFile(model_id, version):
+    version = int(version)
+    collection = db['Model_zoo']
+    trained_model = collection.find_one({'model_id': model_id})
+    # sort version array according to the date
+    model_path = trained_model['versions'][version-1]['saved_model_path']
+    return send_file(model_path)

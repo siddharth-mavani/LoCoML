@@ -169,7 +169,6 @@ function Train() {
         })
             .then((response) => {
                 setTrainingResponse(response.data);
-                localStorage.setItem('trainingResponse', JSON.stringify(response.data));
                 console.log(response.data);
                 setLoading(false); // Stop loading
                 setTrainingCompleted(true);

@@ -32,9 +32,10 @@ function TrainedModels() {
         "estimator_type": "RandomForestClassifier",
         "objective": "classification",
         "metric_type": "accuracy",
-        "evaluation_metrics": [{"metric_name": "accuracy", "metric_value": 0.9}],
+        "evaluation_metrics": [{ "metric_name": "accuracy", "metric_value": 0.9 }],
         "model_name": "Test",
     }]);
+    const [modelChunks, setModelChunks] = React.useState([]);
     const [deployLoading, setDeployLoading] = React.useState(false);
     const [modelDeployed, setModelDeployed] = React.useState(false);
     const [deployedModel, setDeployedModel] = React.useState();
@@ -66,6 +67,9 @@ function TrainedModels() {
                     }
                 }
                 setTrainedModels(temp);
+                var chunks = chunkArray(temp, 3);
+                console.log(chunks)
+                setModelChunks(chunks);
                 setLoading(false)
                 // console.log(temp);
                 // setLoading(false);
@@ -100,18 +104,31 @@ function TrainedModels() {
         }
     }
 
-    function downloadModel(pickled_model) {
-        const blob = new Blob([pickled_model], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'model.pkl');
-        document.body.appendChild(link);
-        link.click();
+    // function downloadModel(pickled_model) {
+    //     const blob = new Blob([pickled_model], { type: 'application/octet-stream' });
+    //     const url = URL.createObjectURL(blob);
+    //     const link = document.createElement('a');
+    //     link.href = url;
+    //     link.setAttribute('download', 'model.pkl');
+    //     document.body.appendChild(link);
+    //     link.click();
 
-        // remove the link when done
-        // url.revokeObjectURL(url);
-        document.body.removeChild(link);
+    //     // remove the link when done
+    //     // url.revokeObjectURL(url);
+    //     document.body.removeChild(link);
+    // }
+
+    function chunkArray(myArray, chunk_size) {
+        var index = 0;
+        var arrayLength = myArray.length;
+        var tempArray = [];
+
+        for (index = 0; index < arrayLength; index += chunk_size) {
+            var myChunk = myArray.slice(index, index + chunk_size);
+            tempArray.push(myChunk);
+        }
+
+        return tempArray;
     }
 
     async function handleDeploy(model_id) {
@@ -127,10 +144,10 @@ function TrainedModels() {
             console.log(error);
         }
         setDeployLoading(false);
-        
-}
 
-    
+    }
+
+
 
     return (
         <div className="content">
@@ -145,19 +162,26 @@ function TrainedModels() {
                     </Typography>
                 </div> :
                 <>
-                    <Row>
-                        {
-                            trainedModels.map((model, index) => {
 
-                                return (
-                                    <Col md="4">
-                                        <ModelCard modelDetails={model} dataset_map={datasets} key={index} />
-                                    </Col>
-                                );
+                    {
+                        modelChunks.map((modelChunk, index) => {
 
-                            })
-                        }
-                    </Row>
+                            return (
+                                <Row style={{marginBottom: "1.5rem"}}>
+                                    {
+                                        modelChunk.map((model, index) => {
+                                            return (
+                                                <Col md="4">
+                                                    <ModelCard modelDetails={model} dataset_map={datasets} key={index} />
+                                                </Col>
+                                            )
+                                        })
+                                    }
+                                </Row>
+                            );
+                        })
+                    }
+
                 </>
                 // <Table striped bordered hover>
                 //     <TableHead>
