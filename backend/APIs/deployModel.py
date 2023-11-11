@@ -21,6 +21,7 @@ deployed_model = None
 def deployModelAPI():
     data = request.get_json()
     model_id = data['model_id']
+    
     trained_model = collection.find_one({'model_id': model_id})
     model_path = trained_model['saved_model_path']
     model = joblib.load(model_path)

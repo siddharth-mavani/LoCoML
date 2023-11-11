@@ -56,13 +56,14 @@ def inference_single():
         return jsonify({'message': 'Invalid user input'}), 400
     
     new_prediction = model.predict(user_input_values)
-
+    print(new_prediction)
     final = []
-    for i in range(len(new_prediction)): 
-        final.append(output_mapping[str(new_prediction[i])])
+
+    # for i in range(len(new_prediction)): 
+    #     final.append(output_mapping[str(new_prediction[i])])
     
     # Return the prediction
-    return jsonify({'prediction': final}), 200
+    return jsonify({'prediction': final}), 400
 
 
 def matchInputSchema(user_input, model_input_schema):
