@@ -549,6 +549,7 @@ const ModelCard = (props) => {
                 </Box>
             </Modal >
         </>
+
     )
 }
 

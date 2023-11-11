@@ -16,6 +16,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Box from '@mui/material/Box';
+import MyComponent from "./OpenAPISpec";
 
 
 import ModelCard from "components/ModelInfo/ModelInfoCard";
@@ -131,18 +132,23 @@ function TrainedModels() {
         return tempArray;
     }
 
-    async function handleDeploy(model_id) {
+    async function handleDeploy(model) {
+        console.log(model)
+        let model_id = model.model_id;
         setDeployLoading(true);
-        try {
-            const response = await axios.post("http://127.0.0.1:5000/deploy", {
-                "model_id": "1L3JE5"
-            });
-            console.log(response);
-            setDeployedModel(model_id);
-            setModelDeployed(true);
-        } catch (error) {
-            console.log(error);
-        }
+        // try {
+        //     const response = await axios.post("http://127.0.0.1:5000/deploy", {
+        //         // "model_id": "1L3JE5"
+        //         "model_id": model_id
+        //     });
+        //     console.log(response);
+        //     setDeployedModel(model_id);
+        //     setModelDeployed(true);
+        // } catch (error) {
+        //     console.log(error);
+        // }
+        setDeployedModel(model_id);
+        setModelDeployed(true);
         setDeployLoading(false);
 
     }

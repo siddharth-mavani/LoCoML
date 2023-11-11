@@ -3,6 +3,8 @@ from flask import Blueprint, jsonify, request
 import joblib
 import json
 
+from mongo import db
+
 inference_blueprint = Blueprint('inference', __name__)
 
 @inference_blueprint.route('/inference', methods=['POST'])
@@ -35,11 +37,15 @@ def processData(user_input, model_input_schema):
 
 @inference_blueprint.route('/inference/single', methods=['POST'])
 def inference_single():
-    model_info = request.json['model']
-    model_id = model_info['model_id']
-    output_mapping = model_info['output_mapping']
-    non_target_columns = request.json['non_target_columns']
+    model_id  = request.json['model_id']
+    collection = db['Model_zoo']
+    model_info = collection.find_one({'model_id': model_id})
     user_input_values = request.json['user_input_values']
+
+    non_target_columns = []
+    for column in model_info['input_schema']:
+        if column['column_name'] != model_info['target_column']:
+            non_target_columns.append(column['column_name'])
     
     # Load the pickled model from the file
     try:
@@ -56,13 +62,10 @@ def inference_single():
         return jsonify({'message': 'Invalid user input'}), 400
     
     new_prediction = model.predict(user_input_values)
+    new_prediction = str(new_prediction[0])
 
-    final = []
-    for i in range(len(new_prediction)): 
-        final.append(output_mapping[str(new_prediction[i])])
-    
     # Return the prediction
-    return jsonify({'prediction': final}), 200
+    return jsonify({'prediction': new_prediction}), 200
 
 
 def matchInputSchema(user_input, model_input_schema):
@@ -89,9 +92,11 @@ def matchInputSchema(user_input, model_input_schema):
 
 @inference_blueprint.route('/inference/batch', methods=['POST'])
 def inference_batch():
-    model_info = json.loads(request.form['model'])
-    model_id = model_info['model_id']
-    output_mapping = model_info['output_mapping']
+
+    model_id  = json.loads(request.form['model_id'])
+    print(model_id)
+    collection = db['Model_zoo']
+    model_info = collection.find_one({'model_id': model_id})
 
     # Load the pickled model from the file
     try:
@@ -118,12 +123,9 @@ def inference_batch():
         return jsonify({'message': 'Invalid file format'}), 400
 
     new_prediction = model.predict(user_input)
-    final = []
-    for i in range(len(new_prediction)): 
-        final.append(output_mapping[str(new_prediction[i])])
 
     # Append the prediction to the dataframe
-    user_input['prediction'] = final
+    user_input['prediction'] = new_prediction
 
     # Return csv file with prediction 
     return user_input.to_csv(index=False), 200
