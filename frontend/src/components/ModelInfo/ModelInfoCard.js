@@ -15,7 +15,12 @@ import Tab from '@mui/material/Tab';
 import { Table as ReactStrapTable, Collapse } from "reactstrap";
 import axios from "axios";
 import { Button as MuiButton } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
 import { CheckCircleOutline } from '@mui/icons-material';
+import OpenAPIComponent from 'components/OpenAPI/OpenAPISpec';
+import saveAs from 'file-saver';
 
 const style = {
     position: 'absolute',
@@ -28,6 +33,66 @@ const style = {
     boxShadow: 24,
     p: 4,
 };
+
+const codeString = `openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: My API
+servers:
+  - url: http://localhost:8080
+paths:
+  /inference/batch:
+    post:
+      summary: Make a batch inference
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to be uploaded
+                model_id:
+                  type: string
+                  
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+  /inference/single:
+    post:
+      summary: Make a single inference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_input_values:
+                  type: object
+                model_id:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prediction:
+                    type: string
+`;
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -70,7 +135,6 @@ const ModelCard = (props) => {
     const [showAllVersions, setShowAllVersions] = React.useState(false);
     const [selectedVersion, setSelectedVersion] = React.useState(1);
     const [deployLoading, setDeployLoading] = React.useState(false);
-    const [modelDeployed, setModelDeployed] = React.useState(false);
     const [deployedModel, setDeployedModel] = React.useState();
     const [metricNames, setMetricNames] = React.useState([]);
     const [bestVersion, setBestVersion] = React.useState(1);
@@ -81,6 +145,8 @@ const ModelCard = (props) => {
     const [downloadLoading, setDownloadLoading] = useState(false);
     const [downloadedModel, setDownloadedModel] = useState();
 
+    const [modelDeployed, setModelDeployed] = React.useState(false);
+
     useEffect(() => {
         setMetricNames(getMetricNames());
     }, []);
@@ -89,7 +155,11 @@ const ModelCard = (props) => {
         setValue(newValue);
     };
 
-
+    const handleSpecDownload = () => {
+        const blob = new Blob([codeString], {type: "text/plain"});
+        saveAs(blob, "data.yaml");
+    };
+    
 
     function getMetricValue(metric_arr, metric_type) {
         for (var i = 0; i < metric_arr.length; i++) {
@@ -154,6 +224,7 @@ const ModelCard = (props) => {
             console.log(error);
         }
         setDeployLoading(false);
+        setDeployModalOpen(false);
     }
 
     const getMetricNames = () => {
@@ -176,6 +247,11 @@ const ModelCard = (props) => {
         }
         return best_version + 1;
     }
+
+    const handleClose = () => {
+        setModelDeployed(false); // replace setModelDeployed with your actual state setter function
+    };
+    
 
     return (
         <>
@@ -243,6 +319,7 @@ const ModelCard = (props) => {
                     </Button>
                 </CardActions>
             </Card>
+
             <Modal open={downloadModalOpen} onClose={() => setDownloadModalOpen(false)}>
                 <Box sx={style}>
                     <Typography id="modal-modal-title" variant="h5"
@@ -405,6 +482,7 @@ const ModelCard = (props) => {
                     </Typography>
                 </Box>
             </Modal>
+
             <Modal open={deployModalOpen} onClose={() => setDeployModalOpen(false)}>
                 <Box sx={style}>
                     <Typography id="modal-modal-title" variant="h5"
@@ -542,12 +620,46 @@ const ModelCard = (props) => {
                                 <Button size="large" color="info" onClick={() => setDeployModalOpen(false)}>Cancel</Button>
                             </Col>
                             <Col md="6" style={{ textAlign: "center" }}>
-                                <Button size="large" color="success">Deploy</Button>
+                                <Button size="large" color="success" onClick={() => DeployModel()}>Deploy</Button>
                             </Col>
                         </Row>
                     </Typography>
                 </Box>
             </Modal >
+
+            <Dialog open={deployLoading}>
+                 <DialogTitle>Deploying Model</DialogTitle>
+                 <DialogContent>
+                     <Box display="flex" justifyContent="center" alignItems="center">
+                         <CircularProgress />
+                     </Box>
+                 </DialogContent>
+            </Dialog>
+
+            <Modal open={modelDeployed} onClose={() => setModelDeployed(false)}>
+                <Box sx={style}>
+                    <Typography id="modal-modal-title" variant="h5"
+                        style={{ textAlign: "center", marginBottom: '1.5rem' }}
+                    >
+                        Model {deployedModel} is deployed successfully. Open API Specification:
+                    </Typography>
+                    
+                    <Box sx={{ overflow: 'auto', maxHeight: '50vh', marginTop: '10px'}}>
+                        <OpenAPIComponent />
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+                        <Button onClick={() => setModelDeployed(false)} variant="contained" color="primary">
+                            Close
+                        </Button>
+                        <Button onClick={handleSpecDownload} variant="contained" color="primary" style={{ marginRight: '10px' }}>
+                            Download 
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
+
+
         </>
 
     )
