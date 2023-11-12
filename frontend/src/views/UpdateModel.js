@@ -463,7 +463,7 @@ const UpdateModel = () => {
                                                             <ReactStrapButton color="info" style={{ color: "black" }}
                                                                 onClick={() => {
                                                                     setUpdateMode('')
-                                                                    
+
                                                                 }}
                                                             >Back</ReactStrapButton>
                                                             <Typography>
@@ -567,6 +567,12 @@ const UpdateModel = () => {
                                                     <div>
                                                         {!trainLoading && !trainingCompleted && !showDetails && (
                                                             <div>
+                                                                <ReactStrapButton color="info" style={{ color: "black" }}
+                                                                    onClick={() => {
+                                                                        setUpdateMode('')
+
+                                                                    }}
+                                                                >Back</ReactStrapButton>
                                                                 <Row>
                                                                     <Col md="12">
                                                                         <ChangeHyperparameters modelDetails={modelDetails} parentCallback={updateChangeHyperparameterVariables} />
@@ -634,6 +640,12 @@ const UpdateModel = () => {
                                                     <div>
                                                         {!trainLoading && !trainingCompleted && !showDetails && (
                                                             <div>
+                                                                <ReactStrapButton color="info" style={{ color: "black" }}
+                                                                    onClick={() => {
+                                                                        setUpdateMode('')
+
+                                                                    }}
+                                                                >Back</ReactStrapButton>
                                                                 <Row>
                                                                     <Col md="12">
                                                                         <ChangeEstimatorType modelDetails={modelDetails} parentCallback={updateChangeEstimatorTypeVariables} />

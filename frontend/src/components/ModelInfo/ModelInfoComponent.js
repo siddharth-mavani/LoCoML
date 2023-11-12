@@ -317,7 +317,7 @@ function ModelInfoComponent(props) {
 
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={3}>
-                        <ReactStrapTable striped>
+                        {modelDetails.training_mode.toLowerCase() == 'automl' && <ReactStrapTable striped>
                             <thead>
                                 <tr>
                                     {
@@ -350,7 +350,14 @@ function ModelInfoComponent(props) {
                                     </tr>
                                 ))}
                             </tbody>
-                        </ReactStrapTable>
+                        </ReactStrapTable>}
+                        {
+                            modelDetails.training_mode.toLowerCase() == 'custom' && <>
+                                <Typography>
+                                    This model was not trained on AutoML mode.
+                                </Typography>
+                            </>
+                        }
                     </CustomTabPanel>
                     <CustomTabPanel value={value} index={4}>
                         <Typography style={{ marginBottom: '1rem' }}>

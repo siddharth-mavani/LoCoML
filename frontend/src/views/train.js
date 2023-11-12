@@ -66,6 +66,8 @@ function Train() {
     const [objective, setObjective] = React.useState('');
     const [targetColumn, setTargetColumn] = React.useState('');
     const [modelName, setModelName] = React.useState('');
+    const [classifierMap, setClassifierMap] = React.useState({});
+    const [regressorMap, setRegressorMap] = React.useState({});
     const [trainingCompleted, setTrainingCompleted] = React.useState(false);
     const [trainingResponse, setTrainingResponse] = React.useState({});
 
@@ -137,6 +139,25 @@ function Train() {
     //     }
     // }, []);
 
+    useEffect(() => {
+
+        axios.get("http://127.0.0.1:5000/getClassifierMap")
+            .then(response => {
+                setClassifierMap(response.data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
+
+        axios.get("http://127.0.0.1:5000/getRegressorMap")
+            .then(response => {
+                setRegressorMap(response.data);
+            })
+            .catch(err => {
+                console.log(err);
+            })
+    }, [])
+
     const handleTraining = () => {
         // event.preventDefault();
         setTrainingCompleted(false);
@@ -156,16 +177,27 @@ function Train() {
             setTrainingStatus(JSON.parse(event.data));
         };
 
+        var sklearnModelName = '';
+
+        if (trainingMode == 'CustomModel') {
+            if (objective.toLowerCase() == 'classification') {
+                sklearnModelName = classifierMap.forward_map[modelType];
+            }
+            else {
+                sklearnModelName = regressorMap.forward_map[modelType];
+            }
+        }
+
         axios.post(process.env.REACT_APP_TRAIN_URL, {
             'dataset_id': selectedDatasetID,
             'training_mode': trainingMode,
-            'model_type': modelType,
+            'model_type': sklearnModelName,
             'objective': objective,
             'metric_mode': metricMode,
             'metric_type': metricType,
             'model_name': modelName,
             'target_column': targetColumn,
-            'isUpdate' : 'False'
+            'isUpdate': 'False'
         })
             .then((response) => {
                 setTrainingResponse(response.data);
@@ -199,7 +231,7 @@ function Train() {
                         </Box>
                         {activeStep === steps.length ? (
                             <>
-                               { Object.keys(trainingResponse).length > 0 ? <ModelInfoComponent modelDetails={trainingResponse} /> : null}
+                                {Object.keys(trainingResponse).length > 0 ? <ModelInfoComponent modelDetails={trainingResponse} /> : null}
                             </>
                         ) : (
                             <React.Fragment>

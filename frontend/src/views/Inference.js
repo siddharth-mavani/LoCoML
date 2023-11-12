@@ -30,9 +30,9 @@ function Inference() {
 
     React.useEffect(() => {
         // wait for 3 seconds
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1000);
+        // const timer = setTimeout(() => {
+        //     setLoading(false);
+        // }, 1000);
 
         axios.get(process.env.REACT_APP_GET_ALL_DATASETS_URL)
             .then((response) => {
@@ -60,12 +60,13 @@ function Inference() {
                     }
                 }
                 setTrainedModels(temp);
+                setLoading(false);
             })
             .catch((error) => {
                 console.log(error);
             })
 
-        return () => clearTimeout(timer);
+
     }, []);
 
     function handleSelectSingle(model) {

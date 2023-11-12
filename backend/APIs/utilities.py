@@ -29,6 +29,15 @@ classifier_map = {
 
 reversed_classifier_map = {str(v): k for k, v in classifier_map.items()}
 
+regressor_map = {
+    enums.Regressors.Ridge.value: 'Ridge',
+    enums.Regressors.BayesianRidge.value: 'BayesianRidge',
+    enums.Regressors.RandomForestRegressor.value: 'RandomForestRegressor',
+    enums.Regressors.AdaBoostRegressor.value: 'AdaBoostRegressor',
+}
+
+reversed_regressor_map = {str(v): k for k, v in regressor_map.items()}
+
 estimator_map = {
     'AdaBoostClassifier' : AdaBoostClassifier,
     'DecisionTreeClassifier' : DecisionTreeClassifier,
@@ -61,6 +70,13 @@ def getClassifiersMap():
     return {
         'forward_map': classifier_map,
         'reverse_map': reversed_classifier_map,
+    }
+
+@utilityAPIs.route('/getRegressorMap', methods=['GET'])
+def getRegressorsMap():
+    return {
+        'forward_map': regressor_map,
+        'reverse_map': reversed_regressor_map,
     }
 
 
