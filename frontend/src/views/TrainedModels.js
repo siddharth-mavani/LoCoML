@@ -16,7 +16,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Box from '@mui/material/Box';
-import MyComponent from "./OpenAPISpec";
+import OpenAPIComponent from "../components/OpenAPI/OpenAPISpec";
 
 
 import ModelCard from "components/ModelInfo/ModelInfoCard";
@@ -60,7 +60,10 @@ function TrainedModels() {
                 var temp = [];
                 for (var i = 0; i < response.data.trained_models.length; i++) {
                     try {
-                        var parsed_model = JSON.parse(response.data.trained_models[i]);
+                        var model = response.data.trained_models[i];
+                        model = model.replace(/Infinity/g, '9999999999'); // replace Infinity with a large number
+                        var parsed_model = JSON.parse(model);
+                        // var parsed_model = JSON.parse(response.data.trained_models[i]);
                         temp.push(parsed_model);
                     } catch (error) {
                         console.log(error);
@@ -71,7 +74,8 @@ function TrainedModels() {
                 var chunks = chunkArray(temp, 3);
                 console.log(chunks)
                 setModelChunks(chunks);
-                setLoading(false)
+                setLoading(false);
+
                 // console.log(temp);
                 // setLoading(false);
             })
@@ -187,6 +191,8 @@ function TrainedModels() {
                             );
                         })
                     }
+
+                    
 
                 </>
                 // <Table striped bordered hover>
