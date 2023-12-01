@@ -54,7 +54,7 @@ function TrainedModels() {
                 console.log(error);
             })
 
-        axios.get("http://localhost:5000/getTrainedModels")
+        axios.get("/getTrainedModels")
             .then(async (response) => {
                 console.log(response.data);
                 var temp = [];
