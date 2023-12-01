@@ -13,6 +13,8 @@ from sklearn.svm import SVC
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
+from sklearn.linear_model import Ridge, BayesianRidge
 from Enums import enums
 utilityAPIs = Blueprint('utilityAPIs', __name__)
 
@@ -46,6 +48,10 @@ estimator_map = {
     'GaussianNB' : GaussianNB,
     'SVC' : SVC,
     'RandomForestClassifier' : RandomForestClassifier,
+    'Ridge': Ridge,
+    'BayesianRidge' : BayesianRidge,
+    'RandomForestRegressor' : RandomForestRegressor,
+    'AdaBoostRegressor' : AdaBoostRegressor,
 }
 
 

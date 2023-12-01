@@ -2,6 +2,7 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 import joblib
 import json
+import os
 
 from mongo import db
 
@@ -38,9 +39,11 @@ def processData(user_input, model_input_schema):
 @inference_blueprint.route('/inference/single', methods=['POST'])
 def inference_single():
     model_id  = request.json['model_id']
+
     collection = db['Model_zoo']
     model_info = collection.find_one({'model_id': model_id})
     user_input_values = request.json['user_input_values']
+    print(model_id)
 
     non_target_columns = []
     for column in model_info['input_schema']:
@@ -50,8 +53,12 @@ def inference_single():
     # Load the pickled model from the file
     try:
         model_path = model_info['saved_model_path']
-        model = joblib.load(model_path)
+        relative_path = model_path[model_path.find('Models'):]
+        cur_path = os.getenv('PROJECT_PATH') + relative_path
+        model = joblib.load(cur_path)
+        print("found")
     except FileNotFoundError:
+        print("not found")
         return jsonify({'message': 'Model not found'}), 404
     
     # convert user_input_values to dataframe

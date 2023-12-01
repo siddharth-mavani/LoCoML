@@ -135,7 +135,8 @@ function ModelInfoComponent(props) {
             }
         })
         // sort the selected array
-        selected.sort((a, b) => b - a);
+        selected.sort((a, b) => a - b);
+        console.log(selected);
         return selected;
     }
 
@@ -531,9 +532,10 @@ function ModelInfoComponent(props) {
                                 </tbody>
                             </ReactStrapTable>}
                         {
-                            compareView &&
+                            compareView && selectedForCompare.length == 2 &&
                             <>
                                 <Row>
+                                    {console.log(selectedForCompare)}
                                     <Col md="12">
                                         <Typography variant="h5" style={{ 'textAlign': 'center' }}>
                                             Version Comparison: Version {modelDetails.versions[selectedForCompare[0]].version_number} Vs Version {modelDetails.versions[selectedForCompare[1]].version_number}
@@ -563,6 +565,8 @@ function ModelInfoComponent(props) {
                                                                 <tr key={index}>
                                                                     <td>{metric.metric_name}</td>
                                                                     <td>{metric.metric_value}</td>
+                                                                    {console.log(index)}
+                                                                    {console.log(modelDetails.versions[selectedForCompare[1]].evaluation_metrics)}
                                                                     <td>{modelDetails.versions[selectedForCompare[1]].evaluation_metrics[index].metric_value} </td>
                                                                     <td>
                                                                         <span style={{ color: getChange(metric.metric_value, modelDetails.versions[selectedForCompare[1]].evaluation_metrics[index].metric_value) >= 0 ? 'green' : 'red' }}>

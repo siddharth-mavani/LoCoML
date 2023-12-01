@@ -37,16 +37,18 @@ def test():
 
     # Check if model exists
     if not os.path.exists(src):
-        return jsonify(message="Model not found"), 250
+        return jsonify(message="Model not found"), 404
     else:
         shutil.copy2(src, dst)
 
+    print(src)
+    print(dst)
     # Build Docker image
-    image, build_log = cli.images.build(path="./", tag="app2")
-    print("Image built")
+    # image, build_log = cli.images.build(path="./", tag="app2")
+    # print("Image built")
 
     # Run Docker container
-    container = cli.containers.run("app2", detach=True, ports={'5000/tcp': 8080})
+    container = cli.containers.run("deployment_app", detach=True, ports={'5000/tcp': 8080})
     print("Container running")
 
     return jsonify(message="Model Deployed"), 200

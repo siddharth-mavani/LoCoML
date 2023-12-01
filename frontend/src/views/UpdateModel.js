@@ -201,10 +201,12 @@ const UpdateModel = () => {
     const StartTrainingForMode1 = () => {
         setTrainingCompleted(false);
         setTrainLoading(true);
+        console.log(hyperparameters)
+        console.log(textBoxValues)
         const hyperparameter_dict = {}
         for (var i = 0; i < Object.keys(hyperparameters).length; i++) {
             // check if the hyperparameter is a number
-            if (isNaN(textBoxValues[i])) {
+            if (isNaN(textBoxValues[i]) || typeof textBoxValues[i] == "boolean" || textBoxValues[i] == null) {
                 hyperparameter_dict[Object.keys(hyperparameters)[i]] = textBoxValues[i]
             }
             else {

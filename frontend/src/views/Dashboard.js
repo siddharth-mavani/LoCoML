@@ -173,7 +173,7 @@ function Dashboard() {
         var modelsTrainedPerDay = {};
         var today = new Date();
         var last7Days = [];
-        for (var i = 0; i < 7; i++) {
+        for (var i = 0; i < 30; i++) {
             var date = new Date(today);
             date.setDate(date.getDate() - i);
             last7Days.push(date.toLocaleDateString());
@@ -369,7 +369,7 @@ function Dashboard() {
                         <Card>
                             <CardHeader>
                                 <CardTitle tag="h5">Number of Models Trained Per day</CardTitle>
-                                <p className="card-category">Last 7 days report</p>
+                                <p className="card-category">Last 30 days report</p>
                             </CardHeader>
                             <CardBody>
                                 {/* <Line

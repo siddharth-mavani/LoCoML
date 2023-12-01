@@ -210,21 +210,38 @@ const ModelCard = (props) => {
             });
     }
 
-    const DeployModel = async () => {
+    const DeployModel = () => {
         setDeployLoading(true);
-        try {
-            const response = await axios.post("http://127.0.0.1:5000/deploy", {
-                "model_id": modelDetails.model_id,
-                "version_number": selectedVersion,
-            });
-            console.log(response);
+        axios.post("/deploy", {
+            "model_id" : modelDetails.model_id,
+            "version_number" : selectedVersion,
+        })
+        .then((res) => {
+            console.log(res);
             setDeployedModel(modelDetails.model_id);
             setModelDeployed(true);
-        } catch (error) {
-            console.log(error);
-        }
-        setDeployLoading(false);
-        setDeployModalOpen(false);
+            setDeployLoading(false);
+            setDeployModalOpen(false);
+        })
+        .catch(err => {
+            console.log("ERRORRR")
+            setDeployLoading(false);
+            setDeployModalOpen(false);
+            console.log(err);
+        })
+        // try {
+        //     const response = await axios.post("http://127.0.0.1:5000/deploy", {
+        //         "model_id": modelDetails.model_id,
+        //         "version_number": selectedVersion,
+        //     });
+        //     console.log(response);
+        //     setDeployedModel(modelDetails.model_id);
+        //     setModelDeployed(true);
+        // } catch (error) {
+        //     console.log(error);
+        // }
+        // setDeployLoading(false);
+        // setDeployModalOpen(false);
     }
 
     const getMetricNames = () => {
@@ -240,12 +257,18 @@ const ModelCard = (props) => {
         var best_value = 0;
         var best_version = 0;
         for (var i = 0; i < modelDetails.versions.length; i++) {
-            if (modelDetails.versions[i].evaluation_metrics[metric_type] > best_value) {
-                best_version = modelDetails.versions[i].version_number;
-                best_value = modelDetails.versions[i].evaluation_metrics[metric_type];
+            // get index of array element where metric_name = metric_type
+            for (var j = 0; j < modelDetails.versions[i].evaluation_metrics.length; j++) {
+                if(modelDetails.versions[i].evaluation_metrics[j].metric_name == metric_type) {
+                    
+                    if(modelDetails.versions[i].evaluation_metrics[j].metric_value > best_value) {
+                        best_version = modelDetails.versions[i].version_number;
+                        best_value = modelDetails.versions[i].evaluation_metrics[j].metric_value;
+                    }
+                }
             }
         }
-        return best_version + 1;
+        return best_version;
     }
 
     const handleClose = () => {
@@ -473,7 +496,7 @@ const ModelCard = (props) => {
                         }
                         <Row>
                             <Col md="6" style={{ textAlign: "center" }}>
-                                <Button size="large" color="info" onClick={() => setDownloadModalOpen(false)}>Cancel</Button>
+                                <Button size="large" color="info" onClick={() => {setDownloadLoading(false); setDownloadModalOpen(false)}}>Cancel</Button>
                             </Col>
                             <Col md="6" style={{ textAlign: "center" }}>
                                 <Button size="large" color="success" disabled={downloadLoading} onClick={() => { DownloadModel() }}>Download</Button>
@@ -555,7 +578,7 @@ const ModelCard = (props) => {
                                         : null
                                 }
                                 <Row className="align-items-center mb-3">
-                                    <Button color="info" onClick={() => { setSelectedVersion(selectBestVersion(modelDetails.metric_type)); setBestVersionSelected(true) }}>Select Best Version</Button>
+                                    <Button color="info" onClick={() => { setSelectedVersion(selectBestVersion(bestMetric)); setBestVersion(selectBestVersion(bestMetric)); setBestVersionSelected(true) }}>Select Best Version</Button>
                                 </Row>
                             </Col>
 
@@ -617,7 +640,7 @@ const ModelCard = (props) => {
                         </Row>
                         <Row>
                             <Col md="6" style={{ textAlign: "center" }}>
-                                <Button size="large" color="info" onClick={() => setDeployModalOpen(false)}>Cancel</Button>
+                                <Button size="large" color="info" onClick={() => {setDownloadLoading(false); setDeployModalOpen(false)}}>Cancel</Button>
                             </Col>
                             <Col md="6" style={{ textAlign: "center" }}>
                                 <Button size="large" color="success" onClick={() => DeployModel()}>Deploy</Button>

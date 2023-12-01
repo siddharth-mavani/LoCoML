@@ -187,6 +187,8 @@ function Train() {
                 sklearnModelName = regressorMap.forward_map[modelType];
             }
         }
+        console.log(modelType)
+        console.log(sklearnModelName)
 
         axios.post(process.env.REACT_APP_TRAIN_URL, {
             'dataset_id': selectedDatasetID,

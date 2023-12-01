@@ -34,4 +34,4 @@ class Regressors(Enum):
     Ridge = 'Ridge Regression'
     BayesianRidge = 'Bayesian Ridge Regression'
     RandomForestRegressor = 'Random Forest Regressor'
-    AdaBoostRegressor = 'Ada Boost Regressor'
+    AdaBoostRegressor = 'AdaBoost Regressor'

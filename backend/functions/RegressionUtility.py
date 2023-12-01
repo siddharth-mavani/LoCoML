@@ -29,10 +29,12 @@ import warnings
 warnings.filterwarnings("ignore")
 
 class RegressionUtility():
-    def __init__(self, data, target_column, metric_type=RegressionMetrics.R2.value):
+    def __init__(self, data, target_column, trainingMode='AutoML', hyperparameters=None, metric_type=RegressionMetrics.R2.value):
         self.data = data
         self.target_column = target_column
         self.cardinality_threshold = 10
+        self.hyperparameters = hyperparameters
+        self.trainingMode = trainingMode
         self.metric_type = metric_type
         self.classifiers = [
             Ridge(alpha=0.5),
@@ -40,6 +42,12 @@ class RegressionUtility():
             RandomForestRegressor(),
             AdaBoostRegressor()
         ]
+        self.classifiers_dict = {
+            Ridge().__class__.__name__ : Ridge(alpha=0.5),
+            BayesianRidge().__class__.__name__ : BayesianRidge(),
+            RandomForestRegressor().__class__.__name__ : RandomForestRegressor(),
+            AdaBoostRegressor().__class__.__name__ : AdaBoostRegressor()
+        }
 
     def get_numerical_columns(self):
         numerical_columns = []
@@ -154,7 +162,7 @@ class RegressionUtility():
             rmse = mean_squared_error(self.y_test, y_pred, squared=False)
 
             results.append({
-                'regressor' : classifier.__class__.__name__,
+                'classifier' : classifier.__class__.__name__,
                 RegressionMetrics.R2.value : round(r2, 2),
                 RegressionMetrics.MSE.value : round(mse, 2),
                 RegressionMetrics.MAE.value : round(mae, 2),
@@ -165,13 +173,58 @@ class RegressionUtility():
         self.results = pd.DataFrame(results)
         self.getBestModel(self.metric_type)
 
+    def trainCustom(self, model_type):
+        self.prepare_data()
+        self.get_preprocessor()
+        print("Status: Setting up Custom Training", file=sys.stderr)
+        regression_metrics = RegressionMetrics
+
+        results = []
+        classifier = self.classifiers_dict[model_type]
+        if self.hyperparameters != 'None':
+            classifier.set_params(**self.hyperparameters)
+
+        self.get_estimator(classifier)
+
+        print("Status: Started Training ", file=sys.stderr)
+        self.estimator.fit(self.X_train, self.y_train)
+        y_pred = self.estimator.predict(self.X_test)
+        # print(y_pred)
+
+        r2 = r2_score(self.y_test, y_pred)
+        mse = mean_squared_error(self.y_test, y_pred)
+        mae = mean_absolute_error(self.y_test, y_pred)
+        rmse = mean_squared_error(self.y_test, y_pred, squared=False)
+
+        results.append({
+            'classifier' : classifier.__class__.__name__,
+            RegressionMetrics.R2.value : round(r2, 2),
+            RegressionMetrics.MSE.value : round(mse, 2),
+            RegressionMetrics.MAE.value : round(mae, 2),
+            RegressionMetrics.RMSE.value : round(rmse, 2)
+        })
+        
+
+        self.results = pd.DataFrame(results)
+        self.best_model = model_type
+        self.best_estimator = self.estimator
+        # self.best_model = self.getBestModel(self.metric_to_optimize)
+
+        print("Status: Training Completed", file=sys.stderr)
+
     def getBestModel(self, metric):
+        if self.trainingMode.lower() != 'automl':
+            return self.best_model
         self.results.sort_values(by=metric, ascending=False, inplace=True)
         self.best_model = self.results.iloc[0]
         self.best_estimator = self.trained_models[self.best_model['regressor']]
         return self.best_model
     
     def saveModel(self, model_name, save_path):
+        if self.trainingMode.lower() != 'automl':
+            joblib.dump(self.best_estimator, save_path)
+            self.save_path = save_path
+            return
         joblib.dump(self.trained_models[model_name], save_path)
         self.save_path = save_path
     

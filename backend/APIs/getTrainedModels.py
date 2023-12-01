@@ -38,4 +38,6 @@ def getTrainedModelFile(model_id, version):
     trained_model = collection.find_one({'model_id': model_id})
     # sort version array according to the date
     model_path = trained_model['versions'][version-1]['saved_model_path']
-    return send_file(model_path)
+    relative_path = model_path[model_path.find('Models'):]
+    cur_path = os.getenv('PROJECT_PATH') + relative_path
+    return send_file(cur_path)
