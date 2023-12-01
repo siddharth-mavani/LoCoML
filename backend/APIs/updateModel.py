@@ -151,7 +151,8 @@ def changeEstimatorType():
         'training_mode': training_mode,
         'model_type': model_type,
         'hyperparameters': new_hyperparameters,
-        'model_id': model_id
+        'model_id': model_id,
+        'isUpdate' : 'True',
     })
 
     return response.json()

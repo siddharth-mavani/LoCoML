@@ -99,9 +99,9 @@ def matchInputSchema(user_input, model_input_schema):
 
 @inference_blueprint.route('/inference/batch', methods=['POST'])
 def inference_batch():
-
+    # print("hit")
     model_id  = json.loads(request.form['model_id'])
-    print(model_id)
+
     collection = db['Model_zoo']
     model_info = collection.find_one({'model_id': model_id})
 
@@ -110,11 +110,14 @@ def inference_batch():
         model_path = model_info['saved_model_path']
         model = joblib.load(model_path)
     except FileNotFoundError:
+        print("not found")
         return jsonify({'message': 'Model not found'}), 404
 
+    
     # Check if a file was uploaded
     if 'file' not in request.files:
         return jsonify({'message': 'No file part'}), 400
+
 
     file = request.files['file']
 
@@ -122,6 +125,7 @@ def inference_batch():
     # submit an empty file without a filename.
     if file.filename == '':
         return jsonify({'message': 'No selected file'}), 400
+
 
     # convert file to dataframe
     user_input = pd.read_csv(file)

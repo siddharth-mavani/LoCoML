@@ -156,10 +156,10 @@ const ModelCard = (props) => {
     };
 
     const handleSpecDownload = () => {
-        const blob = new Blob([codeString], {type: "text/plain"});
+        const blob = new Blob([codeString], { type: "text/plain" });
         saveAs(blob, "data.yaml");
     };
-    
+
 
     function getMetricValue(metric_arr, metric_type) {
         for (var i = 0; i < metric_arr.length; i++) {
@@ -213,22 +213,22 @@ const ModelCard = (props) => {
     const DeployModel = () => {
         setDeployLoading(true);
         axios.post("/deploy", {
-            "model_id" : modelDetails.model_id,
-            "version_number" : selectedVersion,
+            "model_id": modelDetails.model_id,
+            "version_number": selectedVersion,
         })
-        .then((res) => {
-            console.log(res);
-            setDeployedModel(modelDetails.model_id);
-            setModelDeployed(true);
-            setDeployLoading(false);
-            setDeployModalOpen(false);
-        })
-        .catch(err => {
-            console.log("ERRORRR")
-            setDeployLoading(false);
-            setDeployModalOpen(false);
-            console.log(err);
-        })
+            .then((res) => {
+                console.log(res);
+                setDeployedModel(modelDetails.model_id);
+                setModelDeployed(true);
+                setDeployLoading(false);
+                setDeployModalOpen(false);
+            })
+            .catch(err => {
+                console.log("ERRORRR")
+                setDeployLoading(false);
+                setDeployModalOpen(false);
+                console.log(err);
+            })
         // try {
         //     const response = await axios.post("http://127.0.0.1:5000/deploy", {
         //         "model_id": modelDetails.model_id,
@@ -259,9 +259,9 @@ const ModelCard = (props) => {
         for (var i = 0; i < modelDetails.versions.length; i++) {
             // get index of array element where metric_name = metric_type
             for (var j = 0; j < modelDetails.versions[i].evaluation_metrics.length; j++) {
-                if(modelDetails.versions[i].evaluation_metrics[j].metric_name == metric_type) {
-                    
-                    if(modelDetails.versions[i].evaluation_metrics[j].metric_value > best_value) {
+                if (modelDetails.versions[i].evaluation_metrics[j].metric_name == metric_type) {
+
+                    if (modelDetails.versions[i].evaluation_metrics[j].metric_value > best_value) {
                         best_version = modelDetails.versions[i].version_number;
                         best_value = modelDetails.versions[i].evaluation_metrics[j].metric_value;
                     }
@@ -274,7 +274,7 @@ const ModelCard = (props) => {
     const handleClose = () => {
         setModelDeployed(false); // replace setModelDeployed with your actual state setter function
     };
-    
+
 
     return (
         <>
@@ -408,7 +408,7 @@ const ModelCard = (props) => {
                                         <Row className="align-items-center mb-3">
                                             <Col md="12">
                                                 <Typography variant="body1" style={{ textAlign: "center", color: "green" }}>
-                                                    Version {bestVersion} has best {bestMetric} score of {getMetricValue(modelDetails.versions[bestVersion - 1].evaluation_metrics, bestMetric)} and has been selected.
+                                                    Version {selectedVersion} has best {bestMetric} score of {getMetricValue(modelDetails.versions[selectedVersion - 1].evaluation_metrics, bestMetric)} and has been selected.
                                                 </Typography>
                                             </Col>
                                         </Row>
@@ -485,18 +485,18 @@ const ModelCard = (props) => {
                             </Row> : null
                         }
                         {
-                            downloadedModel ? 
-                            <Row style={{ marginBottom: '1.5rem' }}>
-                                <Col md="12" style={{ textAlign: "center" }}>
-                                    <Typography variant="body1" style={{ textAlign: "center", color: "green" }}>
-                                       <CheckCircleOutline color='success'/>  Model Downloaded Successfully!
-                                    </Typography>
-                                </Col>
-                            </Row> : null
+                            downloadedModel ?
+                                <Row style={{ marginBottom: '1.5rem' }}>
+                                    <Col md="12" style={{ textAlign: "center" }}>
+                                        <Typography variant="body1" style={{ textAlign: "center", color: "green" }}>
+                                            <CheckCircleOutline color='success' />  Model Downloaded Successfully!
+                                        </Typography>
+                                    </Col>
+                                </Row> : null
                         }
                         <Row>
                             <Col md="6" style={{ textAlign: "center" }}>
-                                <Button size="large" color="info" onClick={() => {setDownloadLoading(false); setDownloadModalOpen(false)}}>Cancel</Button>
+                                <Button size="large" color="info" onClick={() => { setDownloadLoading(false); setDownloadModalOpen(false) }}>Cancel</Button>
                             </Col>
                             <Col md="6" style={{ textAlign: "center" }}>
                                 <Button size="large" color="success" disabled={downloadLoading} onClick={() => { DownloadModel() }}>Download</Button>
@@ -571,7 +571,7 @@ const ModelCard = (props) => {
                                         <Row className="align-items-center mb-3">
                                             <Col md="12">
                                                 <Typography variant="body1" style={{ textAlign: "center", color: "green" }}>
-                                                    Version {bestVersion} has best {bestMetric} score of {getMetricValue(modelDetails.versions[bestVersion - 1].evaluation_metrics, bestMetric)} and has been selected.
+                                                    Version {selectedVersion} has best {bestMetric} score of {getMetricValue(modelDetails.versions[selectedVersion - 1].evaluation_metrics, bestMetric)} and has been selected.
                                                 </Typography>
                                             </Col>
                                         </Row>
@@ -640,7 +640,7 @@ const ModelCard = (props) => {
                         </Row>
                         <Row>
                             <Col md="6" style={{ textAlign: "center" }}>
-                                <Button size="large" color="info" onClick={() => {setDownloadLoading(false); setDeployModalOpen(false)}}>Cancel</Button>
+                                <Button size="large" color="info" onClick={() => { setDownloadLoading(false); setDeployModalOpen(false) }}>Cancel</Button>
                             </Col>
                             <Col md="6" style={{ textAlign: "center" }}>
                                 <Button size="large" color="success" onClick={() => DeployModel()}>Deploy</Button>
@@ -651,12 +651,12 @@ const ModelCard = (props) => {
             </Modal >
 
             <Dialog open={deployLoading}>
-                 <DialogTitle>Deploying Model</DialogTitle>
-                 <DialogContent>
-                     <Box display="flex" justifyContent="center" alignItems="center">
-                         <CircularProgress />
-                     </Box>
-                 </DialogContent>
+                <DialogTitle>Deploying Model</DialogTitle>
+                <DialogContent>
+                    <Box display="flex" justifyContent="center" alignItems="center">
+                        <CircularProgress />
+                    </Box>
+                </DialogContent>
             </Dialog>
 
             <Modal open={modelDeployed} onClose={() => setModelDeployed(false)}>
@@ -666,17 +666,17 @@ const ModelCard = (props) => {
                     >
                         Model {deployedModel} is deployed successfully. Open API Specification:
                     </Typography>
-                    
-                    <Box sx={{ overflow: 'auto', maxHeight: '50vh', marginTop: '10px'}}>
+
+                    <Box sx={{ overflow: 'auto', maxHeight: '50vh', marginTop: '10px' }}>
                         <OpenAPIComponent />
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
                         <Button onClick={() => setModelDeployed(false)} variant="contained" color="primary">
                             Close
                         </Button>
                         <Button onClick={handleSpecDownload} variant="contained" color="primary" style={{ marginRight: '10px' }}>
-                            Download 
+                            Download
                         </Button>
                     </Box>
                 </Box>

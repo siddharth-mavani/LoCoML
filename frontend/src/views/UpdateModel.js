@@ -285,7 +285,7 @@ const UpdateModel = () => {
         axios.post('http://127.0.0.1:5000/changeEstimatorType', {
             'model_details': modelDetails,
             'new_hyperparameters': hyperparameter_dict,
-            'estimator_type': selectedClassifier
+            'estimator_type': selectedClassifier,
         }).then(response => {
             console.log(response.data)
             setTrainingResponse(response.data)
