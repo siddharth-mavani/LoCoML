@@ -8,6 +8,8 @@ Team Members:
 Project Guide: 
 - **Dr. Karthik Vaidhyanathan**
 
+Link to demo video: https://drive.google.com/drive/folders/1TcIyn4QQDKZfMlI27sqQu95duF-Dwxjc?usp=sharing
+
 ## Backend API Documentation
 ### `APIs` Folder
 All the APIs are present in the `APIs` folder.
