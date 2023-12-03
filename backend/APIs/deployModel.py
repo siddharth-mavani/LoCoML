@@ -41,11 +41,9 @@ def test():
     else:
         shutil.copy2(src, dst)
 
-    print(src)
-    print(dst)
     # Build Docker image
-    # image, build_log = cli.images.build(path="./", tag="app2")
-    # print("Image built")
+    image, build_log = cli.images.build(path="./", tag="app2")
+    print("Image built")
 
     # Run Docker container
     container = cli.containers.run("deployment_app", detach=True, ports={'5000/tcp': 8080})

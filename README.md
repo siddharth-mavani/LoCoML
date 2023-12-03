@@ -1,19 +1,96 @@
 # BTP-2
 
 Team Members:
-Ayush Agrawal (2020101025)
+- Ayush Agrawal (2020101025)
+- Siddharth Mavani (2020101122)
+- Rohan Chowdary (2020101130)
 
-Siddharth Mavani (2020101122)
-
-Rohan Chowdary
-
-Project Guide:
-Dr. Karthik Vaidhyanathan
+Project Guide: 
+- **Dr. Karthik Vaidhyanathan**
 
 ## Backend API Documentation
 ### `APIs` Folder
 All the APIs are present in the `APIs` folder.
 Description of all files & APIs in it:
+- ##### `deployModel.py`
+
+    consists of a single endpoint which is used to deploy a model on docker. The dockerfile is present in the backend folder.
+
+    - `/deployModel`
+    
+        `POST` method
+        
+        Takes in the model id and version number as input and deploys the model on docker by first building the image and then running the container. The docker container is exposed on `port 8080`. Internally, another flask server (app2) is running on the docker container which is exposed on `port 5000`. The flask server on the docker container is used to make predictions on the deployed model.
+        
+        The request body for this API endpoint would be a JSON object. Here's the structure:
+        ```
+        {
+          "model_id": "string or integer",
+          "version": "string or integer"
+        }
+        ```
+        It returns a JSON object which contains the status of the deployment.
+        
+        Return Object:
+        ```
+        {
+            'status': 'success' or 'failure'
+        }
+        ```
+
+- ##### `eda.py`
+
+    Consists of endpoint which performs exploratory data analysis on the dataset.
+    
+    - `/eda/<dataset_id>`
+    
+        `GET` method
+        
+        Takes in the dataset ID as a parameter in the URL and performs EDA on the corresponding dataset. The EDA includes operations like computing the mean, median, standard deviation, minimum and maximum values for numerical columns, and the number of unique values and missing values for all columns. The results of the EDA are returned in the response body.
+
+        The response body for this API endpoint is a JSON object. Here's the structure:
+
+        ```
+        {
+            'message': 'string',
+            'data': 'list of dictionaries representing rows of the dataset',
+            'columns': 'list of column names',
+            'column_details': 'dictionary with details for each column'
+        }
+        ```
+
+        The column_details dictionary for each column includes the column index, column type (numerical or categorical), and various statistics depending on the column type. For numerical columns, it includes the mean, standard deviation, median, minimum and maximum values, number of missing values, and range. For categorical columns, it includes the number of unique values and number of missing values.
+
+        Example Return Object:
+
+        ```
+        {
+            'message': 'EDA completed successfully',
+            'data': [{'column1': 'value1', 'column2': 'value2', ...}, ...],
+            'columns': ['column1', 'column2', ...],
+            'column_details': {
+                'column1': {
+                    'index': 0,
+                    'column_type': 'numerical',
+                    'mean': 50.0,
+                    'std_dev': 10.0,
+                    'median': 50.0,
+                    'min': 0,
+                    'max': 100,
+                    'num_missing_values': 0,
+                    'range': 100
+                },
+                'column2': {
+                    'index': 1,
+                    'column_type': 'categorical',
+                    'num_unique_values': 5,
+                    'num_missing_values': 0
+                },
+                ...
+            }
+        }
+        ```
+        
 - ##### `getDatasets.py`
 
     Consists of dataset related queries on the database
@@ -96,6 +173,71 @@ Description of all files & APIs in it:
         `GET` method    
         
         Returns the pickle file of the model with model_id `model_id` and version number as `version`
+
+- ##### `inference.py`
+
+    This script provides endpoints for making predictions using trained models. The models are identified by their IDs and are expected to be stored in the ``backend/Models/`` directory.
+
+    - `/inference/single`
+
+        `POST` method
+
+        This endpoint takes in a model ID and a list of input values, makes a prediction using the specified model, and returns the prediction. The model ID and input values are expected to be provided in the request body as a JSON object with the following structure:
+
+        ```
+        {
+            "model_id": "string or integer",
+            "input_values": ["value1", "value2", ...]
+        }
+        ```
+
+        The endpoint returns a JSON object with the prediction, or an error message if the model is not found or the input values are invalid.
+
+    - `/inference/batch`
+
+        `POST` method
+
+        This endpoint takes in a model ID and a CSV file, makes predictions for each row in the CSV file using the specified model, and returns a CSV file with the predictions appended as a new column. The model ID is expected to be provided in the request body as a JSON object with the following structure:
+
+        ```
+        {
+        "model_id": "string or integer"
+        }
+        ```
+
+        The CSV file is expected to be uploaded as a file with the key 'file'. The endpoint returns a CSV file with the predictions, or an error message if the model is not found, no file is uploaded, or the file format is invalid.
+
+- ##### `preprocess.py`
+
+    This script provides an endpoint for preprocessing a specified dataset. The dataset is identified by its ID and is expected to be in CSV format in the `backend/Datasets/` directory.
+
+    - `/preprocess`
+
+        `POST` method
+
+        This endpoint takes in a dataset ID and a list of preprocessing tasks, performs the specified tasks on the dataset, and saves the preprocessed dataset in the ``./processedDatasets/`` directory. The dataset ID and preprocessing tasks are expected to be provided in the request body as a JSON object with the following structure:
+
+        ```
+        {
+            "dataset_id": "string or integer",
+            "preprocessing_steps": ["task1", "task2", ...]
+        }
+        ```
+
+        The available tasks are "Drop Duplicate Rows", "Interpolate Missing Values", and "Normalise Features". If "Drop Duplicate Rows" is specified, the endpoint removes all duplicate rows from the dataset. If "Interpolate Missing Values" is specified, the endpoint fills in missing values in numerical columns with the column mean and in non-numerical columns with the most frequent value. If "Normalise Features" is specified, the endpoint normalizes all numerical columns to have a mean of 0 and a standard deviation of 1.
+
+        The endpoint returns a JSON object with a success message and some statistics about the preprocessing operation, including the number of duplicate rows dropped, the number of missing values interpolated, and the list of columns normalized. The preprocessed dataset is saved as a CSV file in the `./processedDatasets/` directory with the same ID as the original dataset.
+
+        Example Return Object:
+
+        ```
+        {
+            'message': 'Preprocessing completed successfully',
+            'num_duplicate': 5,
+            'num_interpolate': 10,
+            'normalized_columns': ['column1', 'column2', ...]
+        }
+        ```
 
 - ##### `storeDataset.py`
 
