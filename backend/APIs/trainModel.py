@@ -114,60 +114,60 @@ def trainModel():
     print(type(details))
     return json_util.dumps(details)
 
-@trainModelAPIs.route('/hyperparameterTuning', methods=['GET', 'POST'])
-def hyperparameterTuning():
-    data = request.get_json()
-    dataset_id = data['dataset_id']
-    model_name = data['model_name']
-    target_column = data['target_column']
-    objective = data['objective']
-    metric_mode = data['metric_mode']
-    metric_type = data['metric_type']
-    training_mode = data['training_mode']
-    model_type = data['model_type']
-    hyperparameter_grid = data['hyperparameter_grid']
-    model_id = data['model_id']
+# @trainModelAPIs.route('/hyperparameterTuning', methods=['GET', 'POST'])
+# def hyperparameterTuning():
+#     data = request.get_json()
+#     dataset_id = data['dataset_id']
+#     model_name = data['model_name']
+#     target_column = data['target_column']
+#     objective = data['objective']
+#     metric_mode = data['metric_mode']
+#     metric_type = data['metric_type']
+#     training_mode = data['training_mode']
+#     model_type = data['model_type']
+#     hyperparameter_grid = data['hyperparameter_grid']
+#     model_id = data['model_id']
 
-    # make combinations of hyperparameters
-    hyperparameters = []
-    keys = []
-    for key in hyperparameter_grid:
-        keys.append(key)
-        hyperparameters.append(hyperparameter_grid[key])
+#     # make combinations of hyperparameters
+#     hyperparameters = []
+#     keys = []
+#     for key in hyperparameter_grid:
+#         keys.append(key)
+#         hyperparameters.append(hyperparameter_grid[key])
 
-    hyperparameters = list(itertools.product(*hyperparameters))
+#     hyperparameters = list(itertools.product(*hyperparameters))
 
-    hyperparameters_dict = []
-    for hyperparameter in hyperparameters:
-        hyperparameters_dict.append(dict(zip(keys, hyperparameter)))
+#     hyperparameters_dict = []
+#     for hyperparameter in hyperparameters:
+#         hyperparameters_dict.append(dict(zip(keys, hyperparameter)))
 
-    pbar = tqdm(hyperparameters_dict)
+#     pbar = tqdm(hyperparameters_dict)
     
-    best_hyperparameters = None
-    best_metric = None
+#     best_hyperparameters = None
+#     best_metric = None
 
-    for hyperparameter in pbar:
-        pbar.set_description("Processing %s" % hyperparameter)
+#     for hyperparameter in pbar:
+#         pbar.set_description("Processing %s" % hyperparameter)
         
-        response = requests.post('http://localhost:5000/trainModel', json={
-            'dataset_id': dataset_id,
-            'model_name': model_name,
-            'target_column': target_column,
-            'objective': objective,
-            'metric_mode': metric_mode,
-            'metric_type': metric_type,
-            'training_mode': training_mode,
-            'model_type': model_type,
-            'hyperparameters': hyperparameter,
-            'model_id': model_id
-        })
+#         response = requests.post('http://localhost:5000/trainModel', json={
+#             'dataset_id': dataset_id,
+#             'model_name': model_name,
+#             'target_column': target_column,
+#             'objective': objective,
+#             'metric_mode': metric_mode,
+#             'metric_type': metric_type,
+#             'training_mode': training_mode,
+#             'model_type': model_type,
+#             'hyperparameters': hyperparameter,
+#             'model_id': model_id
+#         })
 
-        cur_metric = response.json()['evaluation_metrics'][metric_type.lower()]
-        cur_metric = float(cur_metric)
+#         cur_metric = response.json()['evaluation_metrics'][metric_type.lower()]
+#         cur_metric = float(cur_metric)
         
-        if best_metric == None or cur_metric > best_metric:
-            best_metric = cur_metric
-            best_hyperparameters = hyperparameter
+#         if best_metric == None or cur_metric > best_metric:
+#             best_metric = cur_metric
+#             best_hyperparameters = hyperparameter
 
     
     

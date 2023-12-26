@@ -157,34 +157,34 @@ def changeEstimatorType():
 
     return response.json()
 
-@updateModelAPIs.route('/hyperparameterGridSearch', methods=['POST'])
-def hyperparameterGridSearch():
-    model_details = request.json['model_details']
-    hyperparameter_grid = request.json['hyperparameter_grid']
+# @updateModelAPIs.route('/hyperparameterGridSearch', methods=['POST'])
+# def hyperparameterGridSearch():
+#     model_details = request.json['model_details']
+#     hyperparameter_grid = request.json['hyperparameter_grid']
 
-    dataset_id = model_details['dataset_id']
-    model_id = model_details['model_id']
-    model_name = model_details['model_name']
-    target_column = model_details['target_column']
-    objective = model_details['objective']
-    metric_mode = model_details['metric_mode']
-    metric_type = model_details['metric_type']
-    training_mode = 'Custom'
-    model_type = model_details['estimator_type']
-    model_id = model_details['model_id']
+#     dataset_id = model_details['dataset_id']
+#     model_id = model_details['model_id']
+#     model_name = model_details['model_name']
+#     target_column = model_details['target_column']
+#     objective = model_details['objective']
+#     metric_mode = model_details['metric_mode']
+#     metric_type = model_details['metric_type']
+#     training_mode = 'Custom'
+#     model_type = model_details['estimator_type']
+#     model_id = model_details['model_id']
 
 
-    response = requests.post('http://localhost:5000/trainModel', json={
-        'dataset_id': dataset_id,
-        'model_name': model_name,
-        'target_column': target_column,
-        'objective': objective,
-        'metric_mode': metric_mode,
-        'metric_type': metric_type,
-        'training_mode': training_mode,
-        'model_type': model_type,
-        'hyperparameters': hyperparameter_grid,
-        'model_id': model_id
-    })
+#     response = requests.post('http://localhost:5000/trainModel', json={
+#         'dataset_id': dataset_id,
+#         'model_name': model_name,
+#         'target_column': target_column,
+#         'objective': objective,
+#         'metric_mode': metric_mode,
+#         'metric_type': metric_type,
+#         'training_mode': training_mode,
+#         'model_type': model_type,
+#         'hyperparameters': hyperparameter_grid,
+#         'model_id': model_id
+#     })
 
-    return response.json()
+#     return response.json()
