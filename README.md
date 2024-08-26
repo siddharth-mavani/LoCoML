@@ -1,14 +1,11 @@
-# BTP-2
+# LoCoML
 
-Team Members:
-- Ayush Agrawal (2020101025)
-- Siddharth Mavani (2020101122)
-- Rohan Chowdary (2020101130)
+## Introduction
 
-Project Guide: 
-- **Dr. Karthik Vaidhyanathan**
+This project introduces a low-code machine learning platform designed to streamline the training and deployment of models, making it accessible to users with limited technical expertise. The platform features a user-friendly interface for easy model training and deployment, catering to both novices and experienced users by offering customization options. It includes robust features such as model versioning, performance analytics, and data preprocessing, all aimed at simplifying the machine learning process while providing comprehensive insights and flexibility.
 
 Link to demo video: https://drive.google.com/drive/folders/1TcIyn4QQDKZfMlI27sqQu95duF-Dwxjc?usp=sharing
+
 
 ## Backend API Documentation
 ### `APIs` Folder
@@ -485,3 +482,10 @@ It is used to store the `.csv` files of the dataset on the local disk system.
 
 ### `Models` folder
 It is used to store the `.pkl` files of trained models on the local disk system.
+
+## Team:
+- [Ayush Agrawal](https://github.com/ayushagr2002)
+- [Rohan Chowdary](https://github.com/rohanmodepalle)
+- [Siddharth Mavani](https://github.com/siddharth-mavani)
+
+Worked under the guidance of **[Dr. Karthik Vaidhyanathan](https://karthikv1392.github.io)**
